@@ -65,8 +65,12 @@ void append_row(t_table *table, t_row *row_to_append) {
     current_row->next_row = row_to_append;
 }
 
-void print_cell(t_cell *cell, int index) {
-    printf("Cell %d { data: %d } ", index, cell->data);
+void print_cell(t_cell *cell, int row_index, int cell_index) {
+    if (!cell) {
+        printf("Cell is NULL, can't print it.\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("Cell [%d][%d] { data: %d } ", row_index, cell_index, cell->data);
 }
 
 void print_row(t_row *row, int row_index) {
@@ -74,7 +78,7 @@ void print_row(t_row *row, int row_index) {
     t_cell *cell = row->cells;
     int cell_index = 0;
     while (cell) {
-        print_cell(cell, cell_index);
+        print_cell(cell, row_index, cell_index);
         cell = cell->next_cell;
         ++cell_index;
     }
@@ -130,6 +134,31 @@ void clear_table(t_table* table) {
     }
 }
 
+t_cell* get_cell(t_table* table, int row_index, int cell_index) {
+    if (!table) {
+        printf("Table is NULL, can't get cell [%d][%d].\n", row_index, cell_index);
+        exit(EXIT_FAILURE);
+    }
+
+    //find row
+    t_row* row = table->rows;
+    for (int i = 0; i < row_index; ++i) {
+        if (!row) return NULL;
+        row = row->next_row;
+    }
+    if (!row) return NULL;
+
+    //find cell
+    t_cell* cell = row->cells;
+    for (int j = 0; j < cell_index; ++j) {
+        if (!cell) return NULL;
+        cell = cell->next_cell;
+    }
+    if (!cell) return NULL;
+
+    return cell;
+}
+
 int main() {
     t_table *table = new_table(NULL);
     for (int i = 0; i < 5; ++i) {
@@ -140,7 +169,19 @@ int main() {
         append_row(table, row);
     }
 
+    printf("Testing print_table(table):\n");
     print_table(table);
+    printf("\n");
+
+    printf("Testing get_cell(cell, i, j):\n");
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            t_cell* cell = get_cell(table, i, j);
+            if (cell) print_cell(cell, i, j);
+        }
+        printf("\n");
+    }
+
     clear_table(table);
     free(table);
 

@@ -1,6 +1,7 @@
-//
-// Created by gabriel on 3/21/18.
-//
+/**
+ * Structs and headers for table.c
+ * Defines a table, made of rows (which are made of cells). Each cell of the table contains data.
+ */
 
 #ifndef CSVPARSER_TABLE_H
 #define CSVPARSER_TABLE_H
@@ -57,7 +58,7 @@ void append_row(t_table *table, t_row *row_to_append);
  * Prints a t_cell.
  * @param cell_index is the index of the cell in it's row
  */
-void print_cell(t_cell *cell, int cell_index);
+void print_cell(t_cell *cell, int row_index, int cell_index);
 
 /**
  * Prints all the cells of the row, evoking print_cell(cell, cell_number) for each.
@@ -84,5 +85,13 @@ void clear_row(t_row* row);
  * Clears (evokes clear_row(row)) and frees every row of the table
  */
 void clear_table(t_table* table);
+
+/**
+ * Returns the table cell specified by the row and cell indexes. If it cannot find the cell, returns NULL.
+ * @param row_index the number of the line containing the cell (starts from 0)
+ * @param cell_index the number of the column containing the cell (starts from 0)
+ * @return returns pointer to cell, if it can be found, or else returns NULL
+ */
+t_cell* get_cell(t_table* table, int row_index, int cell_index);
 
 #endif //CSVPARSER_TABLE_H
