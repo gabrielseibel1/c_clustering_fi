@@ -3,4 +3,4 @@ project(c_clustering C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(c_clustering table.c table.h)
+add_executable(c_clustering src/table.c include/table.h)

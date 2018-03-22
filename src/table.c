@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
-#include "table.h"
+#include "../include/table.h"
 
 t_cell *new_cell(int data) {
     t_cell *cell = (t_cell *) malloc(sizeof(t_cell));

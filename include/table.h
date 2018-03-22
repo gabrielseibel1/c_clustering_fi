@@ -5,16 +5,25 @@
 #ifndef CSVPARSER_TABLE_H
 #define CSVPARSER_TABLE_H
 
+/**
+ * Represents a table cell, containing data and a pointer to the next cell of the row
+ */
 typedef struct cell {
     int data;
     struct cell *next_cell;
 } t_cell;
 
+/**
+ * Represents a row with a list of cells and a pointer to the next row of the table
+ */
 typedef struct row {
     t_cell *cells;
     struct row *next_row;
 } t_row;
 
+/**
+ * Represents a table with a list of rows
+ */
 typedef struct table {
     t_row *rows;
 } t_table;
