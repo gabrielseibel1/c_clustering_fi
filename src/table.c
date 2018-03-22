@@ -165,7 +165,7 @@ t_cell* get_cell(t_table* table, int row_index, int cell_index) {
     return cell;
 }
 
-int main() {
+int table_test() {
     t_table *table = new_table(NULL);
     for (int i = 0; i < 5; ++i) {
         t_row* row = new_row(NULL);
