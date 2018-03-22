@@ -1,6 +1,7 @@
 /**
  * Structs and headers for table.c
  * Defines a table, made of rows (which are made of cells). Each cell of the table contains data.
+ * Defines structs, constructors, insertions, accesses (getter), printing and clearing for the data structures.
  */
 
 #ifndef CSVPARSER_TABLE_H

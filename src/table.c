@@ -1,3 +1,9 @@
+/**
+ * Implementations for table.h
+ * Implements functions for tables, made of rows (which are made of cells). Each cell of the table contains data.
+ * Implements constructors, insertions, accesses (getter), printing and clearing for the data structures.
+ */
+
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
