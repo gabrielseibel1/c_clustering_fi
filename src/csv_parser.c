@@ -44,13 +44,15 @@ t_table* csv_to_table(char* filename) {
         //append filled row to table
         append_row(table, row);
     }
-
-    print_table(table);
-    clear_table(table);
-    free(table);
+    //free bytes read from file
     free(file_content_start);
+
+    return table;
 }
 
 void csv_parser_test() {
-    csv_to_table("../data/data_test.csv");
+    t_table* table = csv_to_table("../data/data_test.csv");
+    print_table(table);
+    clear_table(table);
+    free(table);
 }
