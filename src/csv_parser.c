@@ -57,6 +57,7 @@ void csv_parser_test() {
     clear_table(table_test);
     free(table_test);
 
+    //read haberman's survival data set
     printf("\n\nhaberman.data:\n");
     t_table* table_haberman = csv_to_table("../data/haberman.data");
     print_table(table_haberman);
