@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include "../include/table.h"
 
-t_cell *new_cell(int data) {
+t_cell *new_cell(float data) {
     t_cell *cell = (t_cell *) malloc(sizeof(t_cell));
     cell->data = data;
     cell->next_cell = NULL;
@@ -76,7 +76,7 @@ void print_cell(t_cell *cell, int row_index, int cell_index) {
         printf("Cell is NULL, can't print it.\n");
         exit(EXIT_FAILURE);
     }
-    printf("Cell [%d][%d] { data: %d } ", row_index, cell_index, cell->data);
+    printf("Cell [%d][%d] { data: %f } ", row_index, cell_index, cell->data);
 }
 
 void print_row(t_row *row, int row_index) {

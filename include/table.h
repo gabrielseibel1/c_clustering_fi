@@ -11,7 +11,7 @@
  * Represents a table cell, containing data and a pointer to the next cell of the row
  */
 typedef struct cell {
-    int data;
+    float data;
     struct cell *next_cell;
 } t_cell;
 
@@ -33,7 +33,7 @@ typedef struct table {
 /**
  * Constructor for t_cell.
  */
-t_cell *new_cell(int data);
+t_cell *new_cell(float data);
 
 /**
  * Constructor for t_row. Accepts a NULL first_cell, if user wants to make an empty row.
