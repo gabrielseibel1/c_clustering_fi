@@ -51,8 +51,15 @@ t_table* csv_to_table(char* filename) {
 }
 
 void csv_parser_test() {
-    t_table* table = csv_to_table("../data/data_test.csv");
-    print_table(table);
-    clear_table(table);
-    free(table);
+    printf("test_data.csv:\n");
+    t_table* table_test = csv_to_table("../data/data_test.csv");
+    print_table(table_test);
+    clear_table(table_test);
+    free(table_test);
+
+    printf("\n\nhaberman.data:\n");
+    t_table* table_haberman = csv_to_table("../data/haberman.data");
+    print_table(table_haberman);
+    clear_table(table_haberman);
+    free(table_haberman);
 }
