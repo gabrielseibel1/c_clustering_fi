@@ -38,8 +38,10 @@ t_table* csv_to_table(char* filename) {
         //each element between commas turns into a cell, appended to the row
         char* element;
         while ((element = strsep(&line, ","))) {
-            t_cell* cell = new_cell(strtof(element, NULL));
-            append_cell(row, cell);
+            if (strcmp(element, "\0") != 0) {
+                t_cell* cell = new_cell(strtof(element,NULL));
+                append_cell(row, cell);
+            }
         }
         //append filled row to table
         append_row(table, row);
