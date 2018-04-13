@@ -77,7 +77,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <omp.h>
-#include "getopt.h"
 
 #include "diana.h"
 
@@ -88,64 +87,64 @@ int num_omp_threads = 1;
 /*---< usage() >------------------------------------------------------------*/
 void usage(char *argv0) {
     char *help =
-        "Usage: %s [switches] -i filename\n"
-        "       -i filename     		: file containing data to be clustered\n"
-        "       -o output-filename     		: file containing the output result\n"
-        "       -b                 	: input file is in binary format\n"
-        "       -k                 	: number of clusters (default is 5) \n"
-        "       -t threshold		: threshold value\n"
-        "       -n no. of threads	: number of threads";
+            "Usage: %s [switches] -i filename\n"
+                    "       -i filename     		: file containing data to be clustered\n"
+                    "       -o output-filename     		: file containing the output result\n"
+                    "       -b                 	: input file is in binary format\n"
+                    "       -k                 	: number of clusters (default is 5) \n"
+                    "       -t threshold		: threshold value\n"
+                    "       -n no. of threads	: number of threads";
     fprintf(stderr, help, argv0);
     exit(-1);
 }
 
 /*---< main() >-------------------------------------------------------------*/
 int main(int argc, char **argv) {
-    int     opt;
-    extern char   *optarg;
-    extern int     optind;
-    int     nclusters=5;
-    char   *filename = 0;
-    char   *out_filename = 0;
-    float  *buf;
+    int opt;
+    extern char *optarg;
+    extern int optind;
+    int nclusters = 5;
+    char *filename = 0;
+    char *out_filename = 0;
+    float *buf;
     float **attributes;
-    float **cluster_centres=NULL;
-    int     i, j;
+    float **cluster_centres = NULL;
+    int i, j;
 
-    int     numAttributes;
-    int     numObjects;
-    char    line[1024];
-    int     isBinaryFile = 0;
-    int     nloops = 1;
-    float   threshold = 0.001;
-    double  timing;
+    int numAttributes;
+    int numObjects;
+    char line[1024];
+    int isBinaryFile = 0;
+    int nloops = 1;
+    float threshold = 0.001;
+    double timing;
 
-    while ( (opt=getopt(argc,argv,"i:o:k:t:b:n:?"))!= EOF) {
+    while ((opt = getopt(argc, argv, "i:o:k:t:b:n:?")) != EOF) {
         switch (opt) {
-        case 'i':
-            filename=optarg;
-            break;
-        case 'o':
-            out_filename=optarg;
-            break;
-        case 'b':
-            isBinaryFile = 1;
-            break;
-        case 't':
-            threshold=atof(optarg);
-            break;
-        case 'k':
-            nclusters = atoi(optarg);
-            break;
-        case 'n':
-            num_omp_threads = atoi(optarg);
-            break;
-        case '?':
-            usage(argv[0]);
-            break;
-        default:
-            usage(argv[0]);
-            break;
+            case 'i':
+                filename = optarg;
+                break;
+            case 'o':
+                out_filename = optarg;
+                break;
+            case 'b':
+                isBinaryFile = 1;
+                break;
+            case 't':
+                threshold = atof(optarg);
+                break;
+            case 'k':
+                nclusters = atoi(optarg);
+                break;
+            case 'n':
+                num_omp_threads = atoi(optarg);
+                break;
+            case '?':
+                usage(argv[0]);
+                break;
+            default:
+                usage(argv[0]);
+                break;
         }
     }
 
@@ -162,22 +161,21 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error: no such file (%s)\n", filename);
             exit(1);
         }
-        read(infile, &numObjects,    sizeof(int));
+        read(infile, &numObjects, sizeof(int));
         read(infile, &numAttributes, sizeof(int));
 
 
         /* allocate space for attributes[] and read attributes of all objects */
-        buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        attributes    = (float**)malloc(numObjects*             sizeof(float*));
-        attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        for (i=1; i<numObjects; i++)
-            attributes[i] = attributes[i-1] + numAttributes;
+        buf = (float *) malloc(numObjects * numAttributes * sizeof(float));
+        attributes = (float **) malloc(numObjects * sizeof(float *));
+        attributes[0] = (float *) malloc(numObjects * numAttributes * sizeof(float));
+        for (i = 1; i < numObjects; i++)
+            attributes[i] = attributes[i - 1] + numAttributes;
 
-        read(infile, buf, numObjects*numAttributes*sizeof(float));
+        read(infile, buf, numObjects * numAttributes * sizeof(float));
 
         close(infile);
-    }
-    else {
+    } else {
         FILE *infile;
         if ((infile = fopen(filename, "r")) == NULL) {
             fprintf(stderr, "Error: no such file (%s)\n", filename);
@@ -197,16 +195,16 @@ int main(int argc, char **argv) {
 
 
         /* allocate space for attributes[] and read attributes of all objects */
-        buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        attributes    = (float**)malloc(numObjects*             sizeof(float*));
-        attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        for (i=1; i<numObjects; i++)
-            attributes[i] = attributes[i-1] + numAttributes;
+        buf = (float *) malloc(numObjects * numAttributes * sizeof(float));
+        attributes = (float **) malloc(numObjects * sizeof(float *));
+        attributes[0] = (float *) malloc(numObjects * numAttributes * sizeof(float));
+        for (i = 1; i < numObjects; i++)
+            attributes[i] = attributes[i - 1] + numAttributes;
         rewind(infile);
         i = 0;
         while (fgets(line, 1024, infile) != NULL) {
             if (strtok(line, " \t\n") == NULL) continue;
-            for (j=0; j<numAttributes; j++) {
+            for (j = 0; j < numAttributes; j++) {
                 buf[i] = atof(strtok(NULL, " ,\t\n"));
                 i++;
             }
@@ -215,27 +213,24 @@ int main(int argc, char **argv) {
     }
     printf("I/O completed\n");
 
-    memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+    memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
 
     timing = omp_get_wtime();
-    for (i=0; i<nloops; i++) {
+    for (i = 0; i < nloops; i++) {
 
         cluster_centres = NULL;
-        cluster(numObjects,
-                numAttributes,
-                attributes,           /* [numObjects][numAttributes] */
-                nclusters,
-                threshold,
-                &cluster_centres
-               );
+        diana_cluster(numObjects,
+                      numAttributes,
+                      attributes           /* [numObjects][numAttributes] */
+        );
 
     }
     timing = omp_get_wtime() - timing;
 
 
-    printf("number of Clusters %d\n",nclusters);
-    printf("number of Attributes %d\n\n",numAttributes);
-    printf("number of Objects %d\n\n",numObjects);
+    printf("number of Clusters %d\n", nclusters);
+    printf("number of Attributes %d\n\n", numAttributes);
+    printf("number of Objects %d\n\n", numObjects);
 
     /*
       printf("Cluster Centers Output\n");
@@ -250,11 +245,11 @@ int main(int argc, char **argv) {
       }
     */
     FILE *file;
-    if( (file = fopen(out_filename, "wb" )) == 0 )
-        printf( "The GOLD file was not opened\n" );
-    for (i=0; i< nclusters; i++) {
+    if ((file = fopen(out_filename, "wb")) == 0)
+        printf("The GOLD file was not opened\n");
+    for (i = 0; i < nclusters; i++) {
         fwrite(&i, 1, sizeof(int), file);
-        for (j=0; j<numAttributes; j++)
+        for (j = 0; j < numAttributes; j++)
             fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
     }
     fclose(file);
@@ -265,6 +260,6 @@ int main(int argc, char **argv) {
     free(cluster_centres[0]);
     free(cluster_centres);
     free(buf);
-    return(0);
+    return (0);
 }
 

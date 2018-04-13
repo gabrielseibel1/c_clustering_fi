@@ -16,17 +16,20 @@ add_executable(diana
         src/DIANA/diana.h
         src/DIANA/diana_clustering.c
         src/DIANA/diana_gold_check.c
-        src/DIANA/getopt.c
-        src/DIANA/getopt.h)
-
-add_executable(kmeans
-        src/kmeans/cluster.c
         src/kmeans/kmeans.c
         src/kmeans/kmeans.h
-        src/kmeans/kmeans_clustering.c
         src/kmeans/kmeans_gold_check.c
-        src/kmeans/getopt.c
-        src/kmeans/getopt.h)
+        src/getopt.c
+        src/getopt.h
+        src/DIANA/dendrogram.cpp
+        src/DIANA/dendrogram.h)
+
+add_executable(kmeans
+        src/kmeans/kmeans.c
+        src/kmeans/kmeans.h
+        src/kmeans/kmeans_gold_check.c
+        src/getopt.c
+        src/getopt.h)
 
 add_executable(inpugen
         src/inpuGen/datagen.cpp)

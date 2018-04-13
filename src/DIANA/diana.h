@@ -17,7 +17,7 @@
 /*                                                                           */
 /*2       Redistributions in binary form must reproduce the above copyright   */
 /*        notice, this list of conditions and the following disclaimer in the */
-/*        documentation and/or other materials provided with the distribution.*/ 
+/*        documentation and/or other materials provided with the distribution.*/
 /*                                                                            */
 /*3       Neither the name of Northwestern University nor the names of its    */
 /*        contributors may be used to endorse or promote products derived     */
@@ -39,16 +39,24 @@
 #ifndef _H_DIANA
 #define _H_DIANA
 
+#include "dendrogram.h"
+
 #ifndef FLT_MAX
 #define FLT_MAX 3.40282347e+38
 #endif
 
 /* cluster.c */
-int     cluster(int, int, float**, int, float, float***);
+int diana_cluster(int numObjects,      /* number of input objects */
+                  int numAttributes,   /* size of attribute of each object */
+                  float **attributes      /* [numObjects][numAttributes] */);
 
 /* kmeans_clustering.c */
-float **diana_clustering(float**, int, int, int, float, int*);
-float   euclid_dist_2        (float*, float*, int);
-int     find_nearest_point   (float* , int, float**, int);
+cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
+                            int n_features,
+                            int n_points);
+
+float euclid_dist_2(float *, float *, int);
+
+int find_nearest_point(float *, int, float **, int);
 
 #endif
