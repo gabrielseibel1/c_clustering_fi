@@ -93,7 +93,7 @@ void usage(char *argv0) {
                     "       -b                 	: input file is in binary format\n"
                     "       -k                 	: number of clusters (default is 5) \n"
                     "       -t threshold		: threshold value\n"
-                    "       -n no. of threads	: number of threads";
+                    "       -n no. of threads	: number of threads\n";
     fprintf(stderr, help, argv0);
     exit(-1);
 }
@@ -215,22 +215,33 @@ int main(int argc, char **argv) {
 
     memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
 
+    printf("POINTS (%d) << \n", numObjects);
+    for (int k = 0; k < numObjects; ++k) {
+        for (int l = 0; l < numAttributes; ++l) {
+            printf("%.2f - ", attributes[k][l]);
+        }
+        printf("\n");
+    }
+    printf(">>\n");
+
     timing = omp_get_wtime();
     for (i = 0; i < nloops; i++) {
 
-        cluster_centres = NULL;
-        diana_cluster(numObjects,
-                      numAttributes,
-                      attributes           /* [numObjects][numAttributes] */
-        );
+        srand(7);
+        /* perform DIANA and saves result in dendrogram (cpp interface) */
+        diana_clustering(attributes,
+                         numAttributes,
+                         numObjects);
 
     }
     timing = omp_get_wtime() - timing;
 
 
-    printf("number of Clusters %d\n", nclusters);
+    print_dendrogram();
+    //printf("number of Clusters %d\n", nclusters);
     printf("number of Attributes %d\n\n", numAttributes);
     printf("number of Objects %d\n\n", numObjects);
+
 
     /*
       printf("Cluster Centers Output\n");
@@ -244,7 +255,8 @@ int main(int argc, char **argv) {
           printf("\n\n");
       }
     */
-    FILE *file;
+
+/*    FILE *file;
     if ((file = fopen(out_filename, "wb")) == 0)
         printf("The GOLD file was not opened\n");
     for (i = 0; i < nclusters; i++) {
@@ -252,13 +264,11 @@ int main(int argc, char **argv) {
         for (j = 0; j < numAttributes; j++)
             fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
     }
-    fclose(file);
+    fclose(file);*/
 
     printf("Time for process: %f\n", timing);
 
     free(attributes);
-    free(cluster_centres[0]);
-    free(cluster_centres);
     free(buf);
     return (0);
 }

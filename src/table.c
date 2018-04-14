@@ -9,29 +9,29 @@
 #include <stdlib.h>
 #include "../include/table.h"
 
-t_cell *new_cell(float data) {
-    t_cell *cell = (t_cell *) malloc(sizeof(t_cell));
+cell_t *new_cell(float data) {
+    cell_t *cell = (cell_t *) malloc(sizeof(cell_t));
     cell->data = data;
     cell->next_cell = NULL;
     return cell;
 }
 
-t_row *new_row(t_cell *first_cell) {
-    t_row *row = (t_row *) malloc(sizeof(t_row));
+row_t *new_row(cell_t *first_cell) {
+    row_t *row = (row_t *) malloc(sizeof(row_t));
     row->cells = first_cell;
     row->next_row = NULL;
     return row;
 }
 
-t_table *new_table(t_row *first_row) {
-    t_table *table = (t_table *) malloc(sizeof(t_table));
+table_t *new_table(row_t *first_row) {
+    table_t *table = (table_t *) malloc(sizeof(table_t));
     table->rows = first_row;
     return table;
 }
 
-void append_cell(t_row *row, t_cell *cell_to_append) {
+void append_cell(row_t *row, cell_t *cell_to_append) {
     if (!row) {
-        printf("Row is NULL, can't append cell.\n");
+        fprintf(stderr, "Row is NULL, can't append cell.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -42,7 +42,7 @@ void append_cell(t_row *row, t_cell *cell_to_append) {
     }
 
     //look for last cell of the row
-    t_cell *current_cell = row->cells;
+    cell_t *current_cell = row->cells;
     while (current_cell->next_cell) {
         current_cell = current_cell->next_cell;
     }
@@ -50,12 +50,12 @@ void append_cell(t_row *row, t_cell *cell_to_append) {
     current_cell->next_cell = cell_to_append;
 }
 
-void append_row(t_table *table, t_row *row_to_append) {
+void append_row(table_t *table, row_t *row_to_append) {
     if (!table) {
-        printf("Table is NULL, can't append row.\n");
+        fprintf(stderr, "Table is NULL, can't append row.\n");
         exit(EXIT_FAILURE);
     }
-    
+
     //if there are no rows, append as first one
     if (table->rows == NULL) {
         table->rows = row_to_append;
@@ -63,7 +63,7 @@ void append_row(t_table *table, t_row *row_to_append) {
     }
 
     //look for last row of the table
-    t_row *current_row = table->rows;
+    row_t *current_row = table->rows;
     while (current_row->next_row) {
         current_row = current_row->next_row;
     }
@@ -71,17 +71,22 @@ void append_row(t_table *table, t_row *row_to_append) {
     current_row->next_row = row_to_append;
 }
 
-void print_cell(t_cell *cell, int row_index, int cell_index) {
+void print_cell(cell_t *cell, int row_index, int cell_index) {
     if (!cell) {
-        printf("Cell is NULL, can't print it.\n");
+        fprintf(stderr, "Cell is NULL, can't print it.\n");
         exit(EXIT_FAILURE);
     }
     printf("Cell [%d][%d] { data: %f } ", row_index, cell_index, cell->data);
 }
 
-void print_row(t_row *row, int row_index) {
+void print_row(row_t *row, int row_index) {
+    if (!row) {
+        fprintf(stderr, "Row is NULL, can't print it.\n");
+        exit(EXIT_FAILURE);
+    }
+
     printf("Row %d { ", row_index);
-    t_cell *cell = row->cells;
+    cell_t *cell = row->cells;
     int cell_index = 0;
     while (cell) {
         print_cell(cell, row_index, cell_index);
@@ -91,13 +96,13 @@ void print_row(t_row *row, int row_index) {
     printf("}\n");
 }
 
-void print_table(t_table *table) {
+void print_table(table_t *table) {
     if (!table) {
-        printf("Table is NULL, can't print it.\n");
+        fprintf(stderr, "Table is NULL, can't print it.\n");
         exit(EXIT_FAILURE);
     }
 
-    t_row *row = table->rows;
+    row_t *row = table->rows;
     int index = 0;
     while (row) {
         print_row(row, index);
@@ -106,48 +111,48 @@ void print_table(t_table *table) {
     }
 }
 
-void clear_cell(t_cell* cell) {
+void clear_cell(cell_t *cell) {
     //nothing to be cleared
 }
 
-void clear_row(t_row* row) {
+void clear_row(row_t *row) {
     if (!row) {
-        printf("Row is NULL, can't clear it.\n");
+        fprintf(stderr, "Row is NULL, can't clear it.\n");
         exit(EXIT_FAILURE);
     }
 
-    t_cell* cell = row->cells;
+    cell_t *cell = row->cells;
     while (cell) {
         clear_cell(cell);
-        t_cell* next_cell = cell->next_cell;
+        cell_t *next_cell = cell->next_cell;
         free(cell);
         cell = next_cell;
     }
 }
 
-void clear_table(t_table* table) {
+void clear_table(table_t *table) {
     if (!table) {
-        printf("Table is NULL, can't clear it.\n");
+        fprintf(stderr, "Table is NULL, can't clear it.\n");
         exit(EXIT_FAILURE);
     }
 
-    t_row* row = table->rows;
+    row_t *row = table->rows;
     while (row) {
         clear_row(row);
-        t_row* next_row = row->next_row;
+        row_t *next_row = row->next_row;
         free(row);
         row = next_row;
     }
 }
 
-t_cell* get_cell(t_table* table, int row_index, int cell_index) {
+cell_t *get_cell(table_t *table, int row_index, int cell_index) {
     if (!table) {
-        printf("Table is NULL, can't get cell [%d][%d].\n", row_index, cell_index);
+        fprintf(stderr, "Table is NULL, can't get cell [%d][%d].\n", row_index, cell_index);
         exit(EXIT_FAILURE);
     }
 
     //find row
-    t_row* row = table->rows;
+    row_t *row = table->rows;
     for (int i = 0; i < row_index; ++i) {
         if (!row) return NULL;
         row = row->next_row;
@@ -155,7 +160,7 @@ t_cell* get_cell(t_table* table, int row_index, int cell_index) {
     if (!row) return NULL;
 
     //find cell
-    t_cell* cell = row->cells;
+    cell_t *cell = row->cells;
     for (int j = 0; j < cell_index; ++j) {
         if (!cell) return NULL;
         cell = cell->next_cell;
@@ -165,10 +170,62 @@ t_cell* get_cell(t_table* table, int row_index, int cell_index) {
     return cell;
 }
 
+int count_rows(table_t *table) {
+    if (!table) {
+        fprintf(stderr, "Table is NULL, can't count rows.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    row_t *row = table->rows;
+    int count = 0;
+    while (row != NULL) {
+        ++count;
+        row = row->next_row;
+    }
+
+    return count;
+}
+
+int count_cells(row_t *row) {
+    if (!row) {
+        fprintf(stderr, "Row is NULL, can't count cells.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    cell_t *cell = row->cells;
+    int count = 0;
+    while (cell != NULL) {
+        ++count;
+        cell = cell->next_cell;
+    }
+
+    return count;
+}
+
+float **points_from_table(table_t *table, int n_points, int n_attributes) {
+    if (!table) {
+        fprintf(stderr, "Table is NULL, can't count rows.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    //allocate space for points
+    float** points = (float **) malloc(n_points * sizeof(float *));
+    points[0] = (float *) malloc(n_points * n_attributes * sizeof(float));
+    for (int i = 1; i < n_points; i++) {
+        points[i] = points[i - 1] + n_attributes;
+    }
+
+    for (int i = 0; i < n_points; ++i) {
+        for (int j = 0; j < n_attributes; ++j) {
+            points[i][j] = get_cell(table, i, j)->data;
+        }
+    }
+}
+
 int table_test() {
-    t_table *table = new_table(NULL);
+    table_t *table = new_table(NULL);
     for (int i = 0; i < 5; ++i) {
-        t_row* row = new_row(NULL);
+        row_t *row = new_row(NULL);
         for (int j = 0; j < 3; ++j) {
             append_cell(row, new_cell(j));
         }
@@ -182,7 +239,7 @@ int table_test() {
     printf("Testing get_cell(cell, i, j):\n");
     for (int i = 0; i < 6; ++i) {
         for (int j = 0; j < 4; ++j) {
-            t_cell* cell = get_cell(table, i, j);
+            cell_t *cell = get_cell(table, i, j);
             if (cell) print_cell(cell, i, j);
         }
         printf("\n");

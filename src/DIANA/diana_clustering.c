@@ -73,6 +73,7 @@
 #include <math.h>
 #include "diana.h"
 #include "../kmeans/kmeans.h"
+#include "../kmeans/kmeans_clustering.h"
 #include <stdbool.h>
 
 #define RANDOM_MAX 2147483647
@@ -85,43 +86,10 @@ extern double wtime(void);
 
 extern int num_omp_threads;
 
-int find_nearest_point(float *pt,          /* [nfeatures] */
-                       int nfeatures,
-                       float **pts,         /* [npts][nfeatures] */
-                       int npts) {
-    int index, i;
-    float min_dist = FLT_MAX;
-
-    /* find the cluster center id with min distance to pt */
-    for (i = 0; i < npts; i++) {
-        float dist;
-        dist = euclid_dist_2(pt, pts[i], nfeatures);  /* no need square root */
-        if (dist < min_dist) {
-            min_dist = dist;
-            index = i;
-        }
-    }
-    return (index);
-}
-
-/*----< euclid_dist_2() >----------------------------------------------------*/
-/* multi-dimensional spatial Euclid distance square */
-__inline
-float euclid_dist_2(float *pt1,
-                    float *pt2,
-                    int numdims) {
-    int i;
-    float ans = 0.0;
-
-    for (i = 0; i < numdims; i++)
-        ans += (pt1[i] - pt2[i]) * (pt1[i] - pt2[i]);
-
-    return (ans);
-}
-
 cluster_t *new_father_cluster(int size) {
     cluster_t *father_cluster = (cluster_t *) malloc(sizeof(cluster_t));
     father_cluster->size = size;
+    father_cluster->points = malloc(sizeof(int)*size);
     for (int point = 0; point < size; ++point) {
         father_cluster->points[point] = point;
     }
@@ -153,28 +121,32 @@ int *membership_from_kmeans(float **points, int n_features, int n_points, int k,
 cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
                             int n_features, int n_points) {
 
+
+    //create first cluster (with all points) and initialize dendrogram with it
     cluster_t *father_cluster = new_father_cluster(n_points);
+    initialize_dendrogram(father_cluster);
 
     //iterate over the levels of the dendrogram while not all clusters are unitary
     bool all_clusters_in_level_are_unitary = (n_points == 1);
-    int level = 0; reset_levels();
+    int level = 1; //1 (not 0) because father cluster has already been inserted
     do {
+        //printf("level %d\n", level);
 
-        int n_clusters_in_level = (int) pow(2, level); // 2^lvl
+        int n_clusters_in_anterior_level = (int) pow(2, level-1); // 2^lvl-1
 
         //for each big cluster (of the anterior level) build two smaller clusters
         for (int cluster_to_divide_index = 0;
-             cluster_to_divide_index < n_clusters_in_level; ++cluster_to_divide_index) {
+             cluster_to_divide_index < n_clusters_in_anterior_level; ++cluster_to_divide_index) {
 
-            for (int i = 0; i < 2; ++i) {
-                int n_points_in_cluster_to_divide;
-                float **points_in_cluster_to_divide = get_points_in_cluster(level,
-                                                                            cluster_to_divide_index,
-                                                                            points,
-                                                                            n_features,
-                                                                            &n_points_in_cluster_to_divide);
+            int n_points_in_cluster_to_divide;
+            float **points_in_cluster_to_divide = get_points_in_cluster(level - 1,
+                                                                        cluster_to_divide_index,
+                                                                        points,
+                                                                        n_features,
+                                                                        &n_points_in_cluster_to_divide);
 
-                //get list of points that belong to new cluster
+            if (n_points_in_cluster_to_divide > 1) { //no need to split a cluster that has only one element
+                //get list of points that belong to new clusters
                 int *points_membership = membership_from_kmeans(points_in_cluster_to_divide,
                                                                 n_features,
                                                                 n_points_in_cluster_to_divide,
@@ -184,8 +156,16 @@ cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
                 insert_2_clusters_in_dendrogram(level, points_membership, n_points_in_cluster_to_divide);
             }
         }
-        ++level; inc_levels();
         all_clusters_in_level_are_unitary = (bool) are_all_clusters_in_level_unitary(level);
+        if (!all_clusters_in_level_are_unitary) {
+            ++level;
+            inc_levels();
+        }
+
+        //print_dendrogram();
+
     } while (!all_clusters_in_level_are_unitary);
+
+    return father_cluster;
 }
 

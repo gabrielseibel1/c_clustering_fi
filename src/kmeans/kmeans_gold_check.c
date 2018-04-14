@@ -76,7 +76,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <omp.h>
-#include "../getopt.h"
+#include "getopt.h"
 
 #include "kmeans.h"
 

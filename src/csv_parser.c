@@ -7,7 +7,7 @@
 #include <memory.h>
 #include "../include/csv_parser.h"
 
-t_table* csv_to_table(char* filename) {
+table_t* csv_to_table(char* filename) {
     FILE* file_pointer = fopen(filename, "r");
     if (!file_pointer) {
         printf("Can't open %s in r mode.\n", filename);
@@ -28,18 +28,18 @@ t_table* csv_to_table(char* filename) {
     char* file_content_start = file_content;
 
     //create a table to store file content
-    t_table* table = new_table(NULL);
+    table_t* table = new_table(NULL);
 
     //get lines and fill a row out of each
     char* line;
     while ((line = strsep(&file_content, "\n")) && line[0] != '\0') {
-        t_row* row = new_row(NULL);
+        row_t* row = new_row(NULL);
 
         //each element between commas turns into a cell, appended to the row
         char* element;
-        while ((element = strsep(&line, ","))) {
+        while ((element = strsep(&line, " ,"))) {
             if (strcmp(element, "\0") != 0) {
-                t_cell* cell = new_cell(strtof(element,NULL));
+                cell_t* cell = new_cell(strtof(element,NULL));
                 append_cell(row, cell);
             }
         }
@@ -54,14 +54,14 @@ t_table* csv_to_table(char* filename) {
 
 void csv_parser_test() {
     printf("test_data.csv:\n");
-    t_table* table_test = csv_to_table("../data/data_test.csv");
+    table_t* table_test = csv_to_table("../data/data_test.csv");
     print_table(table_test);
     clear_table(table_test);
     free(table_test);
 
     //read haberman's survival data set
     printf("\n\nhaberman.data:\n");
-    t_table* table_haberman = csv_to_table("../data/haberman.data");
+    table_t* table_haberman = csv_to_table("../data/haberman.data");
     print_table(table_haberman);
     clear_table(table_haberman);
     free(table_haberman);

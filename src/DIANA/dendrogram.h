@@ -19,10 +19,12 @@ typedef struct cluster {
 #define EXTERNC
 #endif
 
+EXTERNC void print_cluster(cluster_t *cluster1);
+EXTERNC void print_dendrogram();
 EXTERNC int are_all_clusters_in_level_unitary(int level);
-EXTERNC void reset_levels();
 EXTERNC void inc_levels();
-EXTERNC void insert_2_clusters_in_dendrogram(int level, int *points, int n_points);
+EXTERNC void initialize_dendrogram(cluster_t* father_cluster);
+EXTERNC void insert_2_clusters_in_dendrogram(int level, int *points_membership, int n_points);
 EXTERNC float **get_points_in_cluster(int level,
                                       int cluster_index,
                                       float **points,
