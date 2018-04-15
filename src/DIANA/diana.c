@@ -217,10 +217,12 @@ int main(int argc, char **argv) {
 
     printf("POINTS (%d) { ", numObjects);
     for (int k = 0; k < numObjects; ++k) {
-        printf("\n\t#%d: ", k);
+        printf("\n\t#%d: (", k);
         for (int l = 0; l < numAttributes; ++l) {
-            printf("%.2f - ", attributes[k][l]);
+            printf("%.2f", attributes[k][l]);
+            if (l + 1 < numAttributes) printf(", ");
         }
+        printf(")");
     }
     printf("\n}\n");
 

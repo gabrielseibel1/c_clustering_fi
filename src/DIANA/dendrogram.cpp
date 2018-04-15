@@ -12,7 +12,8 @@
 int levels = 0;
 std::map<int, cluster_t *> dendrogram;
 
-void split_points(int **points_1, int **points_2, int* points_1_size, int* points_2_size, int *points_membership, int n_points, int* list_of_points) {
+void split_points(int **points_1, int **points_2, int *points_1_size, int *points_2_size, int *points_membership,
+                  int n_points, int *list_of_points) {
     /*std::cout << "POINTS_MEMBERSHIP: ";
     for (int point = 0; point < n_points; ++point) {
         std::cout << "[" << point << "] = " << points_membership[point] << " | ";
@@ -73,7 +74,7 @@ int are_all_clusters_in_level_unitary(int level) {
     } else { //found level
         cluster_t *cluster = it->second;
         bool all_are_unitary = true;
-        while (all_are_unitary && cluster->next_cluster) {
+        while (all_are_unitary && cluster) {
             all_are_unitary = all_are_unitary && (cluster->size == 1);
             cluster = cluster->next_cluster;
         }
@@ -83,34 +84,48 @@ int are_all_clusters_in_level_unitary(int level) {
 
 void inc_levels() { ++levels; }
 
-void initialize_dendrogram(cluster_t* father_cluster) {
+int get_levels() { return levels; }
+
+void initialize_dendrogram(cluster_t *father_cluster) {
     dendrogram.insert(std::make_pair(0, father_cluster));
     ++levels;
 }
 
-void insert_2_clusters_in_dendrogram(int level, int *points_membership, cluster_t* original_cluster) {
+int split_cluster(int level, int *points_membership, cluster_t *original_cluster) {
     int *points_1 = NULL, *points_2 = NULL;
     int points_1_size, points_2_size;
-    split_points(&points_1, &points_2, &points_1_size, &points_2_size, points_membership, original_cluster->size, original_cluster->points);
+    split_points(&points_1, &points_2, &points_1_size, &points_2_size, points_membership, original_cluster->size,
+                 original_cluster->points);
+
+    //if kmeans said all points are classified as same cluster, there is no need to split the original cluster in 2!!!
+    if (points_1_size <= 0 || points_2_size <= 0) return false;
 
     cluster_t *cluster_1 = (cluster_t *) malloc(sizeof(cluster_t));
     cluster_1->points = points_1;
     cluster_1->size = points_1_size;
+    cluster_1->father_cluster = original_cluster;
     cluster_1->left_child = NULL;
     cluster_1->right_child = NULL;
 
     cluster_t *cluster_2 = (cluster_t *) malloc(sizeof(cluster_t));
     cluster_2->points = points_2;
     cluster_2->size = points_2_size;
+    cluster_2->father_cluster = original_cluster;
     cluster_2->left_child = NULL;
     cluster_2->right_child = NULL;
 
+    //chain "brothers"
     cluster_1->next_cluster = cluster_2;
     cluster_2->next_cluster = NULL;
 
+    //attach "brothers" to father
+    original_cluster->left_child = cluster_1;
+    original_cluster->right_child = cluster_2;
+
     std::map<int, cluster_t *>::iterator it = dendrogram.find(level);
 
-    if (it == dendrogram.end()) { //could not find level - create new entry
+    if (it == dendrogram.end()) { //could not find level - create new level and associate cluster to it
+        ++levels;
         dendrogram.insert(std::make_pair(level, cluster_1));
     } else { //found level - get last cluster and append new clusters to it
         cluster_t *preceding_cluster = it->second;
@@ -122,17 +137,20 @@ void insert_2_clusters_in_dendrogram(int level, int *points_membership, cluster_
     /*std::cout << "Created two clusters: \n";
     print_cluster(cluster_1);
     print_cluster(cluster_2);*/
+
+    return true;
 }
 
-cluster_t* get_cluster(int level, int cluster_index) {
+cluster_t *get_cluster(int level, int cluster_index) {
     cluster_t *cluster = dendrogram.find(level)->second;
     for (int i = 0; i < cluster_index; ++i) {
+        if (!cluster) break;
         cluster = cluster->next_cluster;
     }
     return cluster;
 }
 
-float **get_points_in_cluster(cluster_t* cluster, float **points, int n_features) {
+float **get_points_in_cluster(cluster_t *cluster, float **points, int n_features) {
     /*printf("ALL POINTS (cpp) (%d) << \n", 3);
     for (int k = 0; k < 3 *//*debug para o data_test.csv*//*; ++k) {
         for (int l = 0; l < n_features; ++l) {
@@ -167,11 +185,18 @@ float **get_points_in_cluster(cluster_t* cluster, float **points, int n_features
 }
 
 void print_cluster(cluster_t *cluster1) {
-    std::cout << "CLUSTER: points -> { ";
+    std::cout << "CLUSTER "<< cluster1 /*print pointer/id*/<< " {\n";
+    std::cout << "\t\tpoints -> { ";
     for (int i = 0; i < cluster1->size; ++i) {
-        std::cout << cluster1->points[i] << ", ";
+        std::cout << cluster1->points[i];
+        if (i + 1 < cluster1->size) std::cout << ", ";
     }
-    std::cout << "}\n";
+    std::cout << " }\n";
+    std::cout << "\t\tfather -> " << cluster1->father_cluster << "\n";
+    std::cout << "\t\tbrother (next) -> " << cluster1->next_cluster << "\n";
+    std::cout << "\t\tleft child -> " << cluster1->left_child << "\n";
+    std::cout << "\t\tright child -> " << cluster1->right_child << "\n";
+    std::cout << "\t}\n";
 }
 
 void print_dendrogram() {
@@ -182,7 +207,8 @@ void print_dendrogram() {
         std::cout << "LEVEL " << it->first << " {\n";
         cluster_t *cluster = it->second;
         do {
-            std::cout << "\t"; print_cluster(cluster);
+            std::cout << "\t";
+            print_cluster(cluster);
         } while ((cluster = cluster->next_cluster) != NULL);
         std::cout << "}\n";
         ++it;

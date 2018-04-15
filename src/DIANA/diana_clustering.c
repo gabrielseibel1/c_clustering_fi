@@ -93,7 +93,8 @@ cluster_t *new_father_cluster(int size) {
     for (int point = 0; point < size; ++point) {
         father_cluster->points[point] = point;
     }
-    father_cluster->next_cluster = NULL;
+    father_cluster->father_cluster = NULL; //there is none
+    father_cluster->next_cluster = NULL; //there is none
     father_cluster->left_child = NULL; //will be allocated later
     father_cluster->right_child = NULL; //will be allocated later
 
@@ -127,9 +128,11 @@ cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features]
     initialize_dendrogram(father_cluster);
 
     //iterate over the levels of the dendrogram while not all clusters are unitary
-    bool all_clusters_in_level_are_unitary = (n_points == 1);
+    bool all_clusters_in_level_are_unitary = (n_points == 1); //condition to stop algorithm
+    bool there_was_a_cluster_split = false; //condition to stop algorithm
     int level = 1; //1 (not 0) because father cluster has already been inserted
     do {
+        there_was_a_cluster_split = false;
         int n_clusters_in_anterior_level = (int) pow(2, level-1); // 2^lvl-1
 
         //for each big cluster (of the anterior level) build two smaller clusters
@@ -137,7 +140,7 @@ cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features]
 
             cluster_t* cluster_to_divide = get_cluster(level - 1, cluster_to_divide_index);
 
-            if (cluster_to_divide->size > 1) { //no need to split a cluster that has only one element
+            if (cluster_to_divide && cluster_to_divide->size > 1) { //no need to split a cluster that has only one element
 
                 //retrieve attributes from each point of the cluster to be split
                 float** points_with_attributes_from_cluster_to_divide = get_points_in_cluster(cluster_to_divide, all_points, n_features);
@@ -148,16 +151,14 @@ cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features]
                                                                 2, /*split in two new clusters*/
                                                                 0.001 /*get from user*/ );
 
-                insert_2_clusters_in_dendrogram(level, points_membership, cluster_to_divide);
+                there_was_a_cluster_split = split_cluster(level, points_membership, cluster_to_divide) || there_was_a_cluster_split;
             }
         }
 
-        all_clusters_in_level_are_unitary = (bool) are_all_clusters_in_level_unitary(level);
-        if (!all_clusters_in_level_are_unitary) {
-            ++level;
-            inc_levels();
-        }
-    } while (!all_clusters_in_level_are_unitary);
+        level = get_levels();
+
+        //print_dendrogram();
+    } while (/*ORDER OF OPERANDS HERE IS IMPORTANT!*/there_was_a_cluster_split/* && !are_all_clusters_in_level_unitary(level)*/);
 
     return father_cluster;
 }
