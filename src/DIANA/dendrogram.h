@@ -24,12 +24,9 @@ EXTERNC void print_dendrogram();
 EXTERNC int are_all_clusters_in_level_unitary(int level);
 EXTERNC void inc_levels();
 EXTERNC void initialize_dendrogram(cluster_t* father_cluster);
-EXTERNC void insert_2_clusters_in_dendrogram(int level, int *points_membership, int n_points);
-EXTERNC float **get_points_in_cluster(int level,
-                                      int cluster_index,
-                                      float **points,
-                                      int n_features,
-                                      int *n_points_in_cluster);
+EXTERNC void insert_2_clusters_in_dendrogram(int level, int *points_membership, cluster_t* original_cluster);
+EXTERNC cluster_t* get_cluster(int level, int cluster_index);
+EXTERNC float **get_points_in_cluster(cluster_t* cluster, float **points, int n_features);
 
 #undef EXTERNC
 

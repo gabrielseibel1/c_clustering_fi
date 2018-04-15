@@ -51,7 +51,7 @@ int diana_cluster(int numObjects,      /* number of input objects */
                   float **attributes      /* [numObjects][numAttributes] */);
 
 /* kmeans_clustering.c */
-cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
+cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features] */
                             int n_features,
                             int n_points);
 

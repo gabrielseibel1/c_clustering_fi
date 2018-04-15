@@ -118,7 +118,7 @@ int *membership_from_kmeans(float **points, int n_features, int n_points, int k,
 }
 
 /*----< diana_clustering() >---------------------------------------------*/
-cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
+cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features] */
                             int n_features, int n_points) {
 
 
@@ -130,40 +130,33 @@ cluster_t *diana_clustering(float **points,    /* in: [n_points][n_features] */
     bool all_clusters_in_level_are_unitary = (n_points == 1);
     int level = 1; //1 (not 0) because father cluster has already been inserted
     do {
-        //printf("level %d\n", level);
-
         int n_clusters_in_anterior_level = (int) pow(2, level-1); // 2^lvl-1
 
         //for each big cluster (of the anterior level) build two smaller clusters
-        for (int cluster_to_divide_index = 0;
-             cluster_to_divide_index < n_clusters_in_anterior_level; ++cluster_to_divide_index) {
+        for (int cluster_to_divide_index = 0; cluster_to_divide_index < n_clusters_in_anterior_level; ++cluster_to_divide_index) {
 
-            int n_points_in_cluster_to_divide;
-            float **points_in_cluster_to_divide = get_points_in_cluster(level - 1,
-                                                                        cluster_to_divide_index,
-                                                                        points,
-                                                                        n_features,
-                                                                        &n_points_in_cluster_to_divide);
+            cluster_t* cluster_to_divide = get_cluster(level - 1, cluster_to_divide_index);
 
-            if (n_points_in_cluster_to_divide > 1) { //no need to split a cluster that has only one element
+            if (cluster_to_divide->size > 1) { //no need to split a cluster that has only one element
+
+                //retrieve attributes from each point of the cluster to be split
+                float** points_with_attributes_from_cluster_to_divide = get_points_in_cluster(cluster_to_divide, all_points, n_features);
                 //get list of points that belong to new clusters
-                int *points_membership = membership_from_kmeans(points_in_cluster_to_divide,
+                int *points_membership = membership_from_kmeans(points_with_attributes_from_cluster_to_divide,
                                                                 n_features,
-                                                                n_points_in_cluster_to_divide,
+                                                                cluster_to_divide->size,
                                                                 2, /*split in two new clusters*/
                                                                 0.001 /*get from user*/ );
 
-                insert_2_clusters_in_dendrogram(level, points_membership, n_points_in_cluster_to_divide);
+                insert_2_clusters_in_dendrogram(level, points_membership, cluster_to_divide);
             }
         }
+
         all_clusters_in_level_are_unitary = (bool) are_all_clusters_in_level_unitary(level);
         if (!all_clusters_in_level_are_unitary) {
             ++level;
             inc_levels();
         }
-
-        //print_dendrogram();
-
     } while (!all_clusters_in_level_are_unitary);
 
     return father_cluster;

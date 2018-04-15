@@ -215,14 +215,14 @@ int main(int argc, char **argv) {
 
     memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
 
-    printf("POINTS (%d) << \n", numObjects);
+    printf("POINTS (%d) { ", numObjects);
     for (int k = 0; k < numObjects; ++k) {
+        printf("\n\t#%d: ", k);
         for (int l = 0; l < numAttributes; ++l) {
             printf("%.2f - ", attributes[k][l]);
         }
-        printf("\n");
     }
-    printf(">>\n");
+    printf("\n}\n");
 
     timing = omp_get_wtime();
     for (i = 0; i < nloops; i++) {
