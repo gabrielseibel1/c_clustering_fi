@@ -186,17 +186,17 @@ float **get_points_in_cluster(cluster_t *cluster, float **points, int n_features
 }
 
 void print_cluster(cluster_t *cluster1) {
-    std::cout << "CLUSTER "<< cluster1 /*print pointer/id*/<< " {\n";
+    std::cout << "CLUSTER " /*<< cluster1 /*print pointer/id*/<< " {\n";
     std::cout << "\t\tpoints -> { ";
     for (int i = 0; i < cluster1->size; ++i) {
         std::cout << cluster1->points[i];
         if (i + 1 < cluster1->size) std::cout << ", ";
     }
     std::cout << " }\n";
-    std::cout << "\t\tfather -> " << cluster1->father_cluster << "\n";
-    std::cout << "\t\tbrother (next) -> " << cluster1->next_cluster << "\n";
-    std::cout << "\t\tleft child -> " << cluster1->left_child << "\n";
-    std::cout << "\t\tright child -> " << cluster1->right_child << "\n";
+    //std::cout << "\t\tfather -> " << cluster1->father_cluster << "\n";
+    //std::cout << "\t\tbrother (next) -> " << cluster1->next_cluster << "\n";
+    //std::cout << "\t\tleft child -> " << cluster1->left_child << "\n";
+    //std::cout << "\t\tright child -> " << cluster1->right_child << "\n";
     std::cout << "\t}\n";
 }
 
@@ -229,17 +229,17 @@ void dendrogram_to_file(char* filename) {
                 file << "\t";
 
                 { //cluster to file
-                    file << "CLUSTER "<< cluster /*print pointer/id*/<< " {\n";
+                    file << "CLUSTER " /*<< cluster /*print pointer/id*/<< " {\n";
                     file << "\t\tpoints -> { ";
                     for (int i = 0; i < cluster->size; ++i) {
                         file << cluster->points[i];
                         if (i + 1 < cluster->size) file << ", ";
                     }
                     file << " }\n";
-                    file << "\t\tfather -> " << cluster->father_cluster << "\n";
-                    file << "\t\tbrother (next) -> " << cluster->next_cluster << "\n";
-                    file << "\t\tleft child -> " << cluster->left_child << "\n";
-                    file << "\t\tright child -> " << cluster->right_child << "\n";
+                    //file << "\t\tfather -> " << cluster->father_cluster << "\n";
+                    //file << "\t\tbrother (next) -> " << cluster->next_cluster << "\n";
+                    //file << "\t\tleft child -> " << cluster->left_child << "\n";
+                    //file << "\t\tright child -> " << cluster->right_child << "\n";
                     file << "\t}\n";
                 }
 
