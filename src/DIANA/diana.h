@@ -50,10 +50,11 @@ int diana_cluster(int numObjects,      /* number of input objects */
                   int numAttributes,   /* size of attribute of each object */
                   float **attributes      /* [numObjects][numAttributes] */);
 
-/* kmeans_clustering.c */
+/* diana_clustering.c */
 cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features] */
                             int n_features,
-                            int n_points);
+                            int n_points,
+                            float threshold);
 
 float euclid_dist_2(float *, float *, int);
 
