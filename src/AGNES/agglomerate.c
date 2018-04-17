@@ -2,12 +2,17 @@
  * Copyright 2014 Gagarine Yaikhom (MIT License)
  *
  * Implements Agglomerative Hierarchical Clustering algorithm.
+ *
+ * Edited by Gerônimo Veit, UFRGS 2018
  */
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define ERROR -1
+#define SUCCESS 0
 
 #define NOT_USED  0 /* node is currently not used */
 #define LEAF_NODE 1 /* node contains a leaf node */
@@ -25,6 +30,10 @@
 #define read_fail(M) fprintf(stderr, "Failed to read %s from file.\n", M)
 #define invalid_node(I) fprintf(stderr,                                 \
                                 "Invalid cluster node at index %d.\n", I)
+
+//Universal file to keep all gold information of one execution of AGNES
+//See main()
+FILE * gold;
 
 typedef struct cluster_s cluster_t;
 typedef struct cluster_node_s cluster_node_t;
@@ -334,13 +343,19 @@ void print_cluster_items(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
         fprintf(stdout, "Items: ");
+        fprintf(gold, "Items: ");
         if (node->num_items > 0) {
                 fprintf(stdout, "%s", cluster->nodes[node->items[0]].label);
-                for (int i = 1; i < node->num_items; ++i)
+                fprintf(gold, "%s", cluster->nodes[node->items[0]].label);
+                for (int i = 1; i < node->num_items; ++i) {
                         fprintf(stdout, ", %s",
                                 cluster->nodes[node->items[i]].label);
+                        fprintf(gold, ", %s",
+                                cluster->nodes[node->items[i]].label);
+                }
         }
         fprintf(stdout, "\n");
+        fprintf(gold, "\n");
 }
 
 void print_cluster_node(cluster_t *cluster, int index)
@@ -348,19 +363,32 @@ void print_cluster_node(cluster_t *cluster, int index)
         cluster_node_t *node = &(cluster->nodes[index]);
         fprintf(stdout, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
                 index, node->height, node->centroid.x, node->centroid.y);
-        if (node->label)
-                fprintf(stdout, "\tLeaf: %s\n\t", node->label);
-        else
-                fprintf(stdout, "\tMerged: %d, %d\n\t",
-                        node->merged[0], node->merged[1]);
+
+        fprintf(gold, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
+                index, node->height, node->centroid.x, node->centroid.y);
+        if (node->label){
+            fprintf(stdout, "\tLeaf: %s\n\t", node->label);
+            fprintf(gold, "\tLeaf: %s\n\t", node->label);
+        }
+
+        else{
+            fprintf(stdout, "\tMerged: %d, %d\n\t",
+                  node->merged[0], node->merged[1]);
+            fprintf(gold, "\tMerged: %d, %d\n\t",
+                    node->merged[0], node->merged[1]);
+        }
+
         print_cluster_items(cluster, index);
         fprintf(stdout, "\tNeighbours: ");
+        fprintf(gold, "\tNeighbours: ");
         neighbour_t *t = node->neighbours;
         while (t) {
                 fprintf(stdout, "\n\t\t%2d: %5.3f", t->target, t->distance);
+                fprintf(gold, "\n\t\t%2d: %5.3f", t->target, t->distance);
                 t = t->next;
         }
         fprintf(stdout, "\n");
+        fprintf(gold, "\n");
 }
 
 void merge_items(cluster_t *cluster, cluster_node_t *node,
@@ -634,6 +662,13 @@ int main(int argc, char **argv)
                         "<linkage type>\n", argv[0]);
                 exit(1);
         } else {
+                //creates a .txt file to save the output of a no error execution
+                gold = fopen("gold_output.txt", "w");
+                if (gold == NULL) {
+                                    fprintf(stderr, "Failed to open output file gold_output.txt\n");
+                                    return ERROR; //kill execution
+                }
+
                 item_t *items = NULL;
                 int num_items = process_input(&items, argv[1]);
                 set_linkage(argv[3][0]);
@@ -644,15 +679,28 @@ int main(int argc, char **argv)
                         if (cluster) {
                                 fprintf(stdout, "CLUSTER HIERARCHY\n"
                                         "--------------------\n");
+                                fprintf(gold, "CLUSTER HIERARCHY\n"
+                                        "--------------------\n");
                                 print_cluster(cluster);
 
                                 int k = atoi(argv[2]);
                                 fprintf(stdout, "\n\n%d CLUSTERS\n"
                                         "--------------------\n", k);
+                                fprintf(gold, "\n\n%d CLUSTERS\n"
+                                        "--------------------\n", k);
                                 get_k_clusters(cluster, k);
                                 free_cluster(cluster);
                         }
                 }
+
         }
+
+        if (fclose(gold) != SUCCESS) {
+
+                fprintf(stderr, "Failed to close output file\n");
+                return ERROR;
+        }
+
+
         return 0;
 }
