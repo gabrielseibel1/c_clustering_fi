@@ -100,22 +100,21 @@ void usage(char *argv0) {
 
 /*---< main() >-------------------------------------------------------------*/
 int main(int argc, char **argv) {
+    printf("\n\n^^^^^^^^^^^^^^^^^^^^^^^^^ START OF DIANA ^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+
     int opt;
     extern char *optarg;
     extern int optind;
-    int nclusters = 5;
     char *filename = 0;
     char *out_filename = 0;
     float *buf;
     float **attributes;
-    float **cluster_centres = NULL;
     int i, j;
 
     int numAttributes;
     int numObjects;
     char line[1024];
     int isBinaryFile = 0;
-    int nloops = 1;
     float threshold = 0.001;
     double timing;
 
@@ -132,9 +131,6 @@ int main(int argc, char **argv) {
                 break;
             case 't':
                 threshold = atof(optarg);
-                break;
-            case 'k':
-                nclusters = atoi(optarg);
                 break;
             case 'n':
                 num_omp_threads = atoi(optarg);
@@ -215,7 +211,8 @@ int main(int argc, char **argv) {
 
     memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
 
-    printf("POINTS (%d) { ", numObjects);
+    //print parsed points
+    /*printf("POINTS (%d) { ", numObjects);
     for (int k = 0; k < numObjects; ++k) {
         printf("\n\t#%d: (", k);
         for (int l = 0; l < numAttributes; ++l) {
@@ -224,54 +221,33 @@ int main(int argc, char **argv) {
         }
         printf(")");
     }
-    printf("\n}\n");
+    printf("\n}\n");*/
 
+    //run diana
     timing = omp_get_wtime();
-    for (i = 0; i < nloops; i++) {
-
+    {
         srand(7);
         /* perform DIANA and saves result in dendrogram (cpp interface) */
         diana_clustering(attributes,
                          numAttributes,
-                         numObjects);
-
+                         numObjects,
+                         threshold);
     }
     timing = omp_get_wtime() - timing;
 
-
-    print_dendrogram();
-    //printf("number of Clusters %d\n", nclusters);
-    printf("number of Attributes %d\n\n", numAttributes);
+    //show results
+    printf("\nnumber of Attributes %d\n", numAttributes);
     printf("number of Objects %d\n\n", numObjects);
+    print_dendrogram();
 
+    dendrogram_to_file(out_filename);
 
-    /*
-      printf("Cluster Centers Output\n");
-      printf("The first number is cluster number and the following data is arribute value\n");
-      printf("=============================================================================\n\n");
-
-      for (i=0; i< nclusters; i++) {
-    	printf("%d: ", i);
-          for (j=0; j<numAttributes; j++)
-              printf("%.2f ", cluster_centres[i][j]);
-          printf("\n\n");
-      }
-    */
-
-/*    FILE *file;
-    if ((file = fopen(out_filename, "wb")) == 0)
-        printf("The GOLD file was not opened\n");
-    for (i = 0; i < nclusters; i++) {
-        fwrite(&i, 1, sizeof(int), file);
-        for (j = 0; j < numAttributes; j++)
-            fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
-    }
-    fclose(file);*/
-
-    printf("Time for process: %f\n", timing);
+    printf("\n\nTime for process: %f\n", timing);
 
     free(attributes);
     free(buf);
+
+    printf("\n\n^^^^^^^^^^^^^^^^^^^^^^^^^ END OF DIANA ^^^^^^^^^^^^^^^^^^^^^^^^^\n");
     return (0);
 }
 

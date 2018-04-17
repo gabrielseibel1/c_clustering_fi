@@ -120,7 +120,7 @@ int *membership_from_kmeans(float **points, int n_features, int n_points, int k,
 
 /*----< diana_clustering() >---------------------------------------------*/
 cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features] */
-                            int n_features, int n_points) {
+                            int n_features, int n_points, float threshold) {
 
 
     //create first cluster (with all points) and initialize dendrogram with it
@@ -128,8 +128,7 @@ cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features]
     initialize_dendrogram(father_cluster);
 
     //iterate over the levels of the dendrogram while not all clusters are unitary
-    bool all_clusters_in_level_are_unitary = (n_points == 1); //condition to stop algorithm
-    bool there_was_a_cluster_split = false; //condition to stop algorithm
+    bool there_was_a_cluster_split; //condition to stop algorithm
     int level = 1; //1 (not 0) because father cluster has already been inserted
     do {
         there_was_a_cluster_split = false;
@@ -149,7 +148,7 @@ cluster_t *diana_clustering(float **all_points,    /* in: [n_points][n_features]
                                                                 n_features,
                                                                 cluster_to_divide->size,
                                                                 2, /*split in two new clusters*/
-                                                                0.001 /*get from user*/ );
+                                                                threshold);
 
                 there_was_a_cluster_split = split_cluster(level, points_membership, cluster_to_divide) || there_was_a_cluster_split;
             }

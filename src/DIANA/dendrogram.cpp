@@ -6,8 +6,9 @@
 #include <map>
 #include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <cstdio>
+#include <iostream>
+#include <fstream>
 
 int levels = 0;
 std::map<int, cluster_t *> dendrogram;
@@ -212,5 +213,44 @@ void print_dendrogram() {
         } while ((cluster = cluster->next_cluster) != NULL);
         std::cout << "}\n";
         ++it;
+    }
+}
+
+void dendrogram_to_file(char* filename) {
+    std::ofstream file (filename);
+    if (file.is_open()) {
+        file << "DENDROGRAM:\n";
+
+        std::map<int, cluster_t *>::iterator it = dendrogram.begin();
+        while (it != dendrogram.end()) {
+            file << "LEVEL " << it->first << " {\n";
+            cluster_t *cluster = it->second;
+            do {
+                file << "\t";
+
+                { //cluster to file
+                    file << "CLUSTER "<< cluster /*print pointer/id*/<< " {\n";
+                    file << "\t\tpoints -> { ";
+                    for (int i = 0; i < cluster->size; ++i) {
+                        file << cluster->points[i];
+                        if (i + 1 < cluster->size) file << ", ";
+                    }
+                    file << " }\n";
+                    file << "\t\tfather -> " << cluster->father_cluster << "\n";
+                    file << "\t\tbrother (next) -> " << cluster->next_cluster << "\n";
+                    file << "\t\tleft child -> " << cluster->left_child << "\n";
+                    file << "\t\tright child -> " << cluster->right_child << "\n";
+                    file << "\t}\n";
+                }
+
+            } while ((cluster = cluster->next_cluster) != NULL);
+            file << "}\n";
+            ++it;
+        }
+
+        file.close();
+
+    } else {
+        std::cout << "FAILED TO OPEN " << filename;
     }
 }
