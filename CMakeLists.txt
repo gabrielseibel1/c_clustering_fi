@@ -39,5 +39,5 @@ add_executable(kmeans
         src/kmeans/kmeans_clustering.c
         src/kmeans/kmeans_clustering.h)
 
-add_executable(inpugen
+add_executable(datagen
         src/inpuGen/datagen.cpp)
