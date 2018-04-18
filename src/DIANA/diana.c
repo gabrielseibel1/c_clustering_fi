@@ -224,6 +224,7 @@ int main(int argc, char **argv) {
     printf("\n}\n");*/
 
     //run diana
+    initialize_cluster_ids();
     timing = omp_get_wtime();
     {
         srand(7);
@@ -238,6 +239,7 @@ int main(int argc, char **argv) {
     //show results
     printf("\nnumber of Attributes %d\n", numAttributes);
     printf("number of Objects %d\n\n", numObjects);
+
     print_dendrogram();
 
     dendrogram_to_file(out_filename);

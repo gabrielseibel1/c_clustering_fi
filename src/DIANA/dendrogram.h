@@ -27,6 +27,7 @@ EXTERNC int are_all_clusters_in_level_unitary(int level);
 EXTERNC void inc_levels();
 EXTERNC int get_levels();
 EXTERNC void initialize_dendrogram(cluster_t* father_cluster);
+EXTERNC void initialize_cluster_ids();
 /**
  * Splits cluster in two smaller ones (if needed).
  * Returns whether there was a split (1) or not (0)

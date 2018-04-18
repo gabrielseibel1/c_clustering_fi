@@ -12,6 +12,24 @@
 
 int levels = 0;
 std::map<int, cluster_t *> dendrogram;
+int ids = 0;
+std::map<cluster_t *, int> cluster_ids; //maps a cluster pointer to and id
+
+void initialize_cluster_ids() {
+    ids = 0;
+    cluster_ids.insert(std::make_pair((cluster_t*) NULL, ids++));
+}
+
+int get_cluster_id(cluster_t* cluster_ptr) {
+    std::map<cluster_t *, int>::iterator it = cluster_ids.find(cluster_ptr);
+
+    if (it == cluster_ids.end()) {
+        cluster_ids.insert(std::make_pair(cluster_ptr, ids++));
+        return ids - 1;
+    } else {
+        return it->second;
+    }
+}
 
 void split_points(int **points_1, int **points_2, int *points_1_size, int *points_2_size, int *points_membership,
                   int n_points, int *list_of_points) {
@@ -186,17 +204,17 @@ float **get_points_in_cluster(cluster_t *cluster, float **points, int n_features
 }
 
 void print_cluster(cluster_t *cluster1) {
-    std::cout << "CLUSTER " /*<< cluster1 /*print pointer/id*/<< " {\n";
+    std::cout << "CLUSTER #" << get_cluster_id(cluster1) << " {\n";
     std::cout << "\t\tpoints -> { ";
     for (int i = 0; i < cluster1->size; ++i) {
         std::cout << cluster1->points[i];
         if (i + 1 < cluster1->size) std::cout << ", ";
     }
     std::cout << " }\n";
-    //std::cout << "\t\tfather -> " << cluster1->father_cluster << "\n";
-    //std::cout << "\t\tbrother (next) -> " << cluster1->next_cluster << "\n";
-    //std::cout << "\t\tleft child -> " << cluster1->left_child << "\n";
-    //std::cout << "\t\tright child -> " << cluster1->right_child << "\n";
+    std::cout << "\t\tfather -> #" << get_cluster_id(cluster1->father_cluster) << "\n";
+    std::cout << "\t\tbrother (next) -> #" << get_cluster_id(cluster1->next_cluster) << "\n";
+    std::cout << "\t\tleft child -> #" << get_cluster_id(cluster1->left_child) << "\n";
+    std::cout << "\t\tright child -> #" << get_cluster_id(cluster1->right_child) << "\n";
     std::cout << "\t}\n";
 }
 
@@ -229,17 +247,17 @@ void dendrogram_to_file(char* filename) {
                 file << "\t";
 
                 { //cluster to file
-                    file << "CLUSTER " /*<< cluster /*print pointer/id*/<< " {\n";
+                    file << "CLUSTER #" << get_cluster_id(cluster) << " {\n";
                     file << "\t\tpoints -> { ";
                     for (int i = 0; i < cluster->size; ++i) {
                         file << cluster->points[i];
                         if (i + 1 < cluster->size) file << ", ";
                     }
                     file << " }\n";
-                    //file << "\t\tfather -> " << cluster->father_cluster << "\n";
-                    //file << "\t\tbrother (next) -> " << cluster->next_cluster << "\n";
-                    //file << "\t\tleft child -> " << cluster->left_child << "\n";
-                    //file << "\t\tright child -> " << cluster->right_child << "\n";
+                    file << "\t\tfather -> #" << get_cluster_id(cluster->father_cluster) << "\n";
+                    file << "\t\tbrother (next) -> #" << get_cluster_id(cluster->next_cluster) << "\n";
+                    file << "\t\tleft child -> #" << get_cluster_id(cluster->left_child) << "\n";
+                    file << "\t\tright child -> #" << get_cluster_id(cluster->right_child) << "\n";
                     file << "\t}\n";
                 }
 
