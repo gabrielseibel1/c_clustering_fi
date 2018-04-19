@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <time.h>
+
 #define ERROR -1
 #define SUCCESS 0
 
@@ -31,9 +33,14 @@
 #define invalid_node(I) fprintf(stderr,                                 \
                                 "Invalid cluster node at index %d.\n", I)
 
-//Universal file to keep all gold information of one execution of AGNES
+//Universal file to keep all output information of one execution of AGNES
 //See main()
-FILE * gold;
+FILE * out;
+
+
+clock_t start, end, total;
+
+start = clock();
 
 typedef struct cluster_s cluster_t;
 typedef struct cluster_node_s cluster_node_t;
@@ -342,53 +349,53 @@ cluster_t *add_leaves(cluster_t *cluster, item_t *items)
 void print_cluster_items(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        fprintf(stdout, "Items: ");
-        fprintf(gold, "Items: ");
+        //fprintf(stdout, "Items: ");
+        fprintf(out, "Items: ");
         if (node->num_items > 0) {
-                fprintf(stdout, "%s", cluster->nodes[node->items[0]].label);
-                fprintf(gold, "%s", cluster->nodes[node->items[0]].label);
+                //fprintf(stdout, "%s", cluster->nodes[node->items[0]].label);
+                fprintf(out, "%s", cluster->nodes[node->items[0]].label);
                 for (int i = 1; i < node->num_items; ++i) {
-                        fprintf(stdout, ", %s",
-                                cluster->nodes[node->items[i]].label);
-                        fprintf(gold, ", %s",
+                        //fprintf(stdout, ", %s",
+                                //cluster->nodes[node->items[i]].label);
+                        fprintf(out, ", %s",
                                 cluster->nodes[node->items[i]].label);
                 }
         }
-        fprintf(stdout, "\n");
-        fprintf(gold, "\n");
+        //fprintf(stdout, "\n");
+        fprintf(out, "\n");
 }
 
 void print_cluster_node(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        fprintf(stdout, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
-                index, node->height, node->centroid.x, node->centroid.y);
+        //fprintf(stdout, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
+                //index, node->height, node->centroid.x, node->centroid.y);
 
-        fprintf(gold, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
+        fprintf(out, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
                 index, node->height, node->centroid.x, node->centroid.y);
         if (node->label){
-            fprintf(stdout, "\tLeaf: %s\n\t", node->label);
-            fprintf(gold, "\tLeaf: %s\n\t", node->label);
+            //fprintf(stdout, "\tLeaf: %s\n\t", node->label);
+            fprintf(out, "\tLeaf: %s\n\t", node->label);
         }
 
         else{
-            fprintf(stdout, "\tMerged: %d, %d\n\t",
-                  node->merged[0], node->merged[1]);
-            fprintf(gold, "\tMerged: %d, %d\n\t",
+            //fprintf(stdout, "\tMerged: %d, %d\n\t",
+                  //node->merged[0], node->merged[1]);
+            fprintf(out, "\tMerged: %d, %d\n\t",
                     node->merged[0], node->merged[1]);
         }
 
         print_cluster_items(cluster, index);
-        fprintf(stdout, "\tNeighbours: ");
-        fprintf(gold, "\tNeighbours: ");
+        //fprintf(stdout, "\tNeighbours: ");
+        fprintf(out, "\tNeighbours: ");
         neighbour_t *t = node->neighbours;
         while (t) {
-                fprintf(stdout, "\n\t\t%2d: %5.3f", t->target, t->distance);
-                fprintf(gold, "\n\t\t%2d: %5.3f", t->target, t->distance);
+                //fprintf(stdout, "\n\t\t%2d: %5.3f", t->target, t->distance);
+                fprintf(out, "\n\t\t%2d: %5.3f", t->target, t->distance);
                 t = t->next;
         }
-        fprintf(stdout, "\n");
-        fprintf(gold, "\n");
+        //fprintf(stdout, "\n");
+        fprintf(out, "\n");
 }
 
 void merge_items(cluster_t *cluster, cluster_node_t *node,
@@ -663,9 +670,9 @@ int main(int argc, char **argv)
                 exit(1);
         } else {
                 //creates a .txt file to save the output of a no error execution
-                gold = fopen("gold_output.txt", "w");
-                if (gold == NULL) {
-                                    fprintf(stderr, "Failed to open output file gold_output.txt\n");
+                out = fopen("output.txt", "w");
+                if (out == NULL) {
+                                    fprintf(stderr, "Failed to open output file output.txt\n");
                                     return ERROR; //kill execution
                 }
 
@@ -677,16 +684,16 @@ int main(int argc, char **argv)
                         free(items);
 
                         if (cluster) {
-                                fprintf(stdout, "CLUSTER HIERARCHY\n"
-                                        "--------------------\n");
-                                fprintf(gold, "CLUSTER HIERARCHY\n"
+                                //fprintf(stdout, "CLUSTER HIERARCHY\n"
+                                        //"--------------------\n");
+                                fprintf(out, "CLUSTER HIERARCHY\n"
                                         "--------------------\n");
                                 print_cluster(cluster);
 
                                 int k = atoi(argv[2]);
-                                fprintf(stdout, "\n\n%d CLUSTERS\n"
-                                        "--------------------\n", k);
-                                fprintf(gold, "\n\n%d CLUSTERS\n"
+                                //fprintf(stdout, "\n\n%d CLUSTERS\n"
+                                       // "--------------------\n", k);
+                                fprintf(out, "\n\n%d CLUSTERS\n"
                                         "--------------------\n", k);
                                 get_k_clusters(cluster, k);
                                 free_cluster(cluster);
@@ -695,12 +702,16 @@ int main(int argc, char **argv)
 
         }
 
-        if (fclose(gold) != SUCCESS) {
+        if (fclose(out) != SUCCESS) {
 
                 fprintf(stderr, "Failed to close output file\n");
                 return ERROR;
         }
 
+	end = clock;
+	total = (double) (end-start)/CLOCKS_PER_SEC;
+	
+	fprintf(stdout, "Total time taken = %f\n", total);
 
         return 0;
 }
