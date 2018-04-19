@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <time.h>
 
 #define ERROR -1
 #define SUCCESS 0
@@ -36,11 +35,6 @@
 //Universal file to keep all output information of one execution of AGNES
 //See main()
 FILE * out;
-
-
-clock_t start, end, total;
-
-start = clock();
 
 typedef struct cluster_s cluster_t;
 typedef struct cluster_node_s cluster_node_t;
@@ -708,10 +702,6 @@ int main(int argc, char **argv)
                 return ERROR;
         }
 
-	end = clock;
-	total = (double) (end-start)/CLOCKS_PER_SEC;
-	
-	fprintf(stdout, "Total time taken = %f\n", total);
 
         return 0;
 }
