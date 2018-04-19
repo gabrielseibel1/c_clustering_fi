@@ -234,7 +234,7 @@ void print_dendrogram() {
     }
 }
 
-void dendrogram_to_file(char* filename) {
+int dendrogram_to_file(char* filename) {
     std::ofstream file (filename);
     if (file.is_open()) {
         file << "DENDROGRAM:\n";
@@ -267,8 +267,11 @@ void dendrogram_to_file(char* filename) {
         }
 
         file.close();
+        return 0;
 
     } else {
         std::cout << "FAILED TO OPEN " << filename;
+
+        return -1;
     }
 }

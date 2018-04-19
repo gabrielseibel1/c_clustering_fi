@@ -237,13 +237,13 @@ int main(int argc, char **argv) {
     timing = omp_get_wtime() - timing;
 
     //show results
-    printf("\nnumber of Attributes %d\n", numAttributes);
-    printf("number of Objects %d\n\n", numObjects);
-
-    print_dendrogram();
-
-    dendrogram_to_file(out_filename);
-
+    printf("\nDivisive Analysis completed for %d data objects with %d features each\n", numObjects, numAttributes);
+    //print_dendrogram();
+    if (dendrogram_to_file(out_filename) >= 0) {
+        printf("√√√√ SUCCESS: Output of execution written to %s √√√√\n", out_filename);
+    } else {
+        printf("XXXX FAILED to write output of execution written to %s XXXX\n", out_filename);
+    }
     printf("\n\nTime for process: %f\n", timing);
 
     free(attributes);
