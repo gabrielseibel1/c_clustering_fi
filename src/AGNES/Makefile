@@ -1,5 +1,5 @@
 agglomerate: agglomerate.c
-	gcc -std=c99 -o agglomerate agglomerate.c -lm
+	gcc -std=c99 -o agnes agglomerate.c -lm
 
 clean:
 	rm -f agglomerate
