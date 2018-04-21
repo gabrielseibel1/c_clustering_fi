@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 
 #define ERROR -1
@@ -658,6 +659,11 @@ int process_input(item_t **items, const char *fname)
 
 int main(int argc, char **argv)
 {
+	clock_t start, end;
+	double diff_time = 0;
+	time(&start);	
+	
+	
         if (argc != 4) {
                 fprintf(stderr, "Usage: %s <input file> <num clusters> "
                         "<linkage type>\n", argv[0]);
@@ -702,6 +708,10 @@ int main(int argc, char **argv)
                 return ERROR;
         }
 
+	time(&end);
+	diff_time = difftime(end, start);
 
+	fprintf(stdout, "Total time = %f\n", diff_time);
+	
         return 0;
 }
