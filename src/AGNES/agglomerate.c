@@ -12,7 +12,6 @@
 #include <string.h>
 #include <time.h>
 
-
 #define ERROR -1
 #define SUCCESS 0
 
@@ -670,7 +669,7 @@ int main(int argc, char **argv)
                 exit(1);
         } else {
                 //creates a .txt file to save the output of a no error execution
-                out = fopen("output.txt", "w");
+                out = fopen("/home/gabriel/Documents/carol-fi/codes/AGNES/output.txt", "w");
                 if (out == NULL) {
                                     fprintf(stderr, "Failed to open output file output.txt\n");
                                     return ERROR; //kill execution
@@ -712,6 +711,6 @@ int main(int argc, char **argv)
 	diff_time = difftime(end, start);
 
 	fprintf(stdout, "Total time = %f\n", diff_time);
-	
+
         return 0;
 }

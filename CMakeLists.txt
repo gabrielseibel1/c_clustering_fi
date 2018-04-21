@@ -41,3 +41,8 @@ add_executable(kmeans
 
 add_executable(datagen
         src/inpuGen/datagen.cpp)
+
+add_executable(agnes
+        src/AGNES/agglomerate.c)
+
+target_link_libraries(agnes m)
