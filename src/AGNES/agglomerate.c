@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 
 
 #define ERROR -1
@@ -658,13 +659,15 @@ int process_input(item_t **items, const char *fname)
 
 int main(int argc, char **argv)
 {
+        double timing = omp_get_wtime();
+
         if (argc != 4) {
                 fprintf(stderr, "Usage: %s <input file> <num clusters> "
                         "<linkage type>\n", argv[0]);
                 exit(1);
         } else {
                 //creates a .txt file to save the output of a no error execution
-                out = fopen("output.txt", "w");
+                out = fopen("/home/gabriel/Documents/carol-fi/codes/AGNES/output.txt", "w");
                 if (out == NULL) {
                                     fprintf(stderr, "Failed to open output file output.txt\n");
                                     return ERROR; //kill execution
@@ -702,6 +705,8 @@ int main(int argc, char **argv)
                 return ERROR;
         }
 
+        timing = omp_get_wtime() - timing;
 
+        printf("AGNES completed in %lfs\n", timing);
         return 0;
 }
