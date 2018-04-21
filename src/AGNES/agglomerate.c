@@ -10,8 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <omp.h>
-
+#include <time.h>
 
 #define ERROR -1
 #define SUCCESS 0
@@ -659,8 +658,11 @@ int process_input(item_t **items, const char *fname)
 
 int main(int argc, char **argv)
 {
-        double timing = omp_get_wtime();
-
+	clock_t start, end;
+	double diff_time = 0;
+	time(&start);	
+	
+	
         if (argc != 4) {
                 fprintf(stderr, "Usage: %s <input file> <num clusters> "
                         "<linkage type>\n", argv[0]);
@@ -705,8 +707,10 @@ int main(int argc, char **argv)
                 return ERROR;
         }
 
-        timing = omp_get_wtime() - timing;
+	time(&end);
+	diff_time = difftime(end, start);
 
-        printf("AGNES completed in %lfs\n", timing);
+	fprintf(stdout, "Total time = %f\n", diff_time);
+
         return 0;
 }
