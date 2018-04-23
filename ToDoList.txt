@@ -1,3 +1,0 @@
-Structure organization of Agglomerative Nesting (AGNES) including headers and '.c'; 
-Include README.md for the algorithm from the console;
-Update CMkakeLists.txt
