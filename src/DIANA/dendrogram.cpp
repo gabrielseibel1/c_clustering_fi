@@ -13,18 +13,19 @@
 int levels = 0;
 std::map<int, cluster_t *> dendrogram;
 int ids = 0;
-std::map<cluster_t *, int> cluster_ids; //maps a cluster pointer to and id
+std::map<cluster_t *, int> *cluster_ids; //maps a cluster pointer to and id
 
 void initialize_cluster_ids() {
     ids = 0;
-    cluster_ids.insert(std::make_pair((cluster_t*) NULL, ids++));
+    cluster_ids = new std::map<cluster_t*, int>();
+    cluster_ids->insert(std::make_pair((cluster_t*) NULL, ids++));
 }
 
 int get_cluster_id(cluster_t* cluster_ptr) {
-    std::map<cluster_t *, int>::iterator it = cluster_ids.find(cluster_ptr);
+    std::map<cluster_t *, int>::iterator it = cluster_ids->find(cluster_ptr);
 
-    if (it == cluster_ids.end()) {
-        cluster_ids.insert(std::make_pair(cluster_ptr, ids++));
+    if (it == cluster_ids->end()) {
+        cluster_ids->insert(std::make_pair(cluster_ptr, ids++));
         return ids - 1;
     } else {
         return it->second;
@@ -235,6 +236,8 @@ void print_dendrogram() {
 }
 
 int dendrogram_to_file(char* filename) {
+    if (!clusterIdsCheck(false)) return -1;
+
     std::ofstream file (filename);
     if (file.is_open()) {
         file << "DENDROGRAM:\n";
@@ -263,7 +266,7 @@ int dendrogram_to_file(char* filename) {
 
             } while ((cluster = cluster->next_cluster) != NULL);
             file << "}\n";
-            ++it;
+            ++it; //next level
         }
 
         file.close();
@@ -273,5 +276,64 @@ int dendrogram_to_file(char* filename) {
         std::cout << "FAILED TO OPEN " << filename;
 
         return -1;
+    }
+}
+
+void makeClustersToIdsMap(std::pair<int, std::map<cluster_t*, int>*> **countAndMapPair) {
+    auto *map = new std::map<cluster_t*, int>();
+    int lastId = 0;
+
+    auto dendrogramIt = dendrogram.begin();
+    while (dendrogramIt != dendrogram.end()) {
+        cluster_t *cluster = dendrogramIt->second;
+        do {
+            map->insert(std::make_pair(cluster, lastId++));
+        } while ((cluster = cluster->next_cluster) != NULL);
+        ++dendrogramIt; //next level
+    }
+    *countAndMapPair = new std::pair<int, std::map<cluster_t*, int>*>();
+    (*countAndMapPair)->first = lastId;
+    (*countAndMapPair)->second = map;
+}
+
+int clusterIdsCheck(int isFirstCheck) {
+    std::cout << "Cluster ids check ...";
+
+    pthread_t pthread1, pthread2, pthread3;
+    int i1, i2, i3;
+    std::pair<int, std::map<cluster_t*, int>*> *result1, *result2, *result3; //pair with map and last id
+
+    i1 = pthread_create(&pthread1, nullptr, reinterpret_cast<void *(*)(void *)>(makeClustersToIdsMap), &result1);
+    i2 = pthread_create(&pthread2, nullptr, reinterpret_cast<void *(*)(void *)>(makeClustersToIdsMap), &result2);
+    i3 = pthread_create(&pthread3, nullptr, reinterpret_cast<void *(*)(void *)>(makeClustersToIdsMap), &result3);
+    if (i1 != 0 || i2 != 0 || i3 != 0) return false;
+
+    i1 = pthread_join(pthread1, nullptr);
+    i2 = pthread_join(pthread2, nullptr);
+    i3 = pthread_join(pthread3, nullptr);
+    if (i1 != 0 || i2 != 0 || i3 != 0) return false;
+
+    std::cout << " R1:" << result1->first << " R2:" << result2->first << " R3:" << result3->first << "\n";
+
+    if (result1->first == result2->first && result2->first == result3->first) {
+        cluster_ids = result1->second;
+        return true;
+
+    } else { //check for result and correct it if needed
+        //check if there are two equal results
+        if (result1->first == result2->first || result1->first == result3->first) {
+            cluster_ids = result1->second;
+            return true;
+        } else if (result2->first == result3->first) {
+            cluster_ids = result2->second;
+            return true;
+        }
+
+        //if all results are different, run all again or declare a detected unrecoverable error (DUE)
+        if (isFirstCheck) return clusterIdsCheck(false);
+        else {
+            std::cout << "DUE\n";
+            exit(EXIT_FAILURE);
+        }
     }
 }

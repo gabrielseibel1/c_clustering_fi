@@ -35,6 +35,7 @@ EXTERNC void initialize_cluster_ids();
 EXTERNC int split_cluster(int level, int *points_membership, cluster_t *original_cluster);
 EXTERNC cluster_t* get_cluster(int level, int cluster_index);
 EXTERNC float **get_points_in_cluster(cluster_t* cluster, float **points, int n_features);
+EXTERNC int clusterIdsCheck(int isFirstCheck);
 
 #undef EXTERNC
 
