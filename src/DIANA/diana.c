@@ -116,8 +116,10 @@ int main(int argc, char **argv) {
     char line[1024];
     int isBinaryFile = 0;
     float threshold = 0.001;
-    double timing;
+    double computation_timing, total_timing, io_timing;
 
+    total_timing = omp_get_wtime();
+    io_timing = omp_get_wtime();
     while ((opt = getopt(argc, argv, "i:o:k:t:b:n:?")) != EOF) {
         switch (opt) {
             case 'i':
@@ -207,9 +209,9 @@ int main(int argc, char **argv) {
         }
         fclose(infile);
     }
-    printf("I/O completed\n");
-
     memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
+    //printf("I/O completed\n");
+    io_timing = omp_get_wtime() - io_timing;
 
     //print parsed points
     /*printf("POINTS (%d) { ", numObjects);
@@ -225,7 +227,7 @@ int main(int argc, char **argv) {
 
     //run diana
     initialize_cluster_ids();
-    timing = omp_get_wtime();
+    computation_timing = omp_get_wtime();
     {
         srand(7);
         /* perform DIANA and saves result in dendrogram (cpp interface) */
@@ -234,7 +236,8 @@ int main(int argc, char **argv) {
                          numObjects,
                          threshold);
     }
-    timing = omp_get_wtime() - timing;
+    computation_timing = omp_get_wtime() - computation_timing;
+    total_timing = omp_get_wtime() - total_timing;
 
     //show results
     printf("\nDivisive Analysis completed for %d data objects with %d features each\n", numObjects, numAttributes);
@@ -244,12 +247,14 @@ int main(int argc, char **argv) {
     } else {
         printf("XXXX FAILED to write output of execution written to %s XXXX\n", out_filename);
     }
-    printf("\n\nTime for process: %f\n", timing);
+    printf("\nTotal elapsed time: %f\n", total_timing);
+    printf("Time for IO: %f\n", io_timing);
+    printf("Time for processing: %f\n", computation_timing);
 
     free(attributes);
     free(buf);
 
-    printf("\n\n^^^^^^^^^^^^^^^^^^^^^^^^^ END OF DIANA ^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+    printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ END OF DIANA ^^^^^^^^^^^^^^^^^^^^^^^^^\n");
     return (0);
 }
 
