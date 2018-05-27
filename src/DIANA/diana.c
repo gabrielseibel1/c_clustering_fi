@@ -224,6 +224,7 @@ int main(int argc, char **argv) {
     printf("\n}\n");*/
 
     //run diana
+    initialize_cluster_ids();
     timing = omp_get_wtime();
     {
         srand(7);
@@ -238,7 +239,6 @@ int main(int argc, char **argv) {
     //show results
     printf("\nDivisive Analysis completed for %d data objects with %d features each\n", numObjects, numAttributes);
     //print_dendrogram();
-    initialize_cluster_ids();
     if (dendrogram_to_file(out_filename) >= 0) {
         printf("√√√√ SUCCESS: Output of execution written to %s √√√√\n", out_filename);
     } else {
