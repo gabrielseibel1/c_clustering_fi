@@ -297,7 +297,7 @@ void makeClustersToIdsMap(std::pair<int, std::map<cluster_t*, int>*> **countAndM
 }
 
 int clusterIdsCheck(int isFirstCheck) {
-    std::cout << "Cluster ids check ...";
+    std::cout << "Cluster ids check ... ";
 
     pthread_t pthread1, pthread2, pthread3;
     int i1, i2, i3;
