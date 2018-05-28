@@ -116,10 +116,10 @@ int main(int argc, char **argv) {
     char line[1024];
     int isBinaryFile = 0;
     float threshold = 0.001;
-    double computation_timing, total_timing, io_timing;
+    double computation_timing, total_timing, input_read_timing, output_write_timing;
 
     total_timing = omp_get_wtime();
-    io_timing = omp_get_wtime();
+    input_read_timing = omp_get_wtime();
     while ((opt = getopt(argc, argv, "i:o:k:t:b:n:?")) != EOF) {
         switch (opt) {
             case 'i':
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
     }
     memcpy(attributes[0], buf, numObjects * numAttributes * sizeof(float));
     //printf("I/O completed\n");
-    io_timing = omp_get_wtime() - io_timing;
+    input_read_timing = omp_get_wtime() - input_read_timing;
 
     //print parsed points
     /*printf("POINTS (%d) { ", numObjects);
@@ -242,13 +242,17 @@ int main(int argc, char **argv) {
     //show results
     printf("\nDivisive Analysis completed for %d data objects with %d features each\n", numObjects, numAttributes);
     //print_dendrogram();
-    if (dendrogram_to_file(out_filename) >= 0) {
+    output_write_timing = omp_get_wtime();
+    int output_success = dendrogram_to_binary_file(out_filename) >= 0;
+    output_write_timing = omp_get_wtime() - output_write_timing;
+
+    if (output_success) {
         printf("√√√√ SUCCESS: Output of execution written to %s √√√√\n", out_filename);
     } else {
         printf("XXXX FAILED to write output of execution written to %s XXXX\n", out_filename);
     }
     printf("\nTotal elapsed time: %f\n", total_timing);
-    printf("Time for IO: %f\n", io_timing);
+    printf("Time for IO: %f\n", input_read_timing + output_write_timing);
     printf("Time for processing: %f\n", computation_timing);
 
     free(attributes);

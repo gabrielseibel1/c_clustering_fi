@@ -248,16 +248,17 @@ int dendrogram_to_file(char* filename) {
 
                 { //cluster to file
                     file << "CLUSTER #" << get_cluster_id(cluster) << " {\n";
+                    file << "\t\tfather -> #" << get_cluster_id(cluster->father_cluster) << "\n";
+                    file << "\t\tbrother (next) -> #" << get_cluster_id(cluster->next_cluster) << "\n";
+                    file << "\t\tleft child -> #" << get_cluster_id(cluster->left_child) << "\n";
+                    file << "\t\tright child -> #" << get_cluster_id(cluster->right_child) << "\n";
+                    file << "\t\tsize -> " << cluster->size << "\n";
                     file << "\t\tpoints -> { ";
                     for (int i = 0; i < cluster->size; ++i) {
                         file << cluster->points[i];
                         if (i + 1 < cluster->size) file << ", ";
                     }
                     file << " }\n";
-                    file << "\t\tfather -> #" << get_cluster_id(cluster->father_cluster) << "\n";
-                    file << "\t\tbrother (next) -> #" << get_cluster_id(cluster->next_cluster) << "\n";
-                    file << "\t\tleft child -> #" << get_cluster_id(cluster->left_child) << "\n";
-                    file << "\t\tright child -> #" << get_cluster_id(cluster->right_child) << "\n";
                     file << "\t}\n";
                 }
 
@@ -270,7 +271,46 @@ int dendrogram_to_file(char* filename) {
         return 0;
 
     } else {
-        std::cout << "FAILED TO OPEN " << filename;
+        std::cout << "FAILED TO OPEN " << filename << "\n";
+
+        return -1;
+    }
+}
+
+int dendrogram_to_binary_file(char* filename) {
+    std::ofstream file (filename, std::ios::binary);
+    if (file.is_open()) {
+        std::map<int, cluster_t *>::iterator dendroIt = dendrogram.begin();
+        while (dendroIt != dendrogram.end()) {
+            int level = dendroIt->first;
+            cluster_t *cluster = dendroIt->second;
+
+            file.write((char*) &level, sizeof(int)); //level
+            do {
+                //cluster to file
+                int cluster_id = get_cluster_id(cluster);
+                int father_id = get_cluster_id(cluster->father_cluster);
+                int brother_id = get_cluster_id(cluster->next_cluster);
+                int left_child_id = get_cluster_id(cluster->left_child);
+                int right_child_id = get_cluster_id(cluster->right_child);
+
+                file.write((char*) &cluster_id, sizeof(int)) ; //cluster id
+                file.write((char*) &cluster->size, sizeof(int)); //cluster size
+                file.write((char*) &father_id, sizeof(int)); //father's id
+                file.write((char*) &brother_id, sizeof(int)); //brother's id
+                file.write((char*) &left_child_id, sizeof(int)); //left child's id
+                file.write((char*) &right_child_id, sizeof(int)); //right child's id
+                file.write((char*) &cluster->points, sizeof(int)*cluster->size); //points
+
+            } while ((cluster = cluster->next_cluster) != NULL);
+            ++dendroIt;
+        }
+
+        file.close();
+        return 0;
+
+    } else {
+        std::cout << "FAILED TO OPEN " << filename << "IN BINARY MODE\n";
 
         return -1;
     }

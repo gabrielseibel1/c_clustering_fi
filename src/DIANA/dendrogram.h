@@ -22,6 +22,7 @@ typedef struct cluster {
 
 EXTERNC void print_cluster(cluster_t *cluster1);
 EXTERNC void print_dendrogram();
+EXTERNC int dendrogram_to_binary_file(char* filename);
 EXTERNC int dendrogram_to_file(char* filename);
 EXTERNC int are_all_clusters_in_level_unitary(int level);
 EXTERNC void inc_levels();
