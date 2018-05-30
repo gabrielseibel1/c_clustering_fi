@@ -4,28 +4,25 @@
 
 #include "dendrogram.h"
 #include <map>
-#include <cstdlib>
 #include <cstring>
-#include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
-int levels = 0;
 std::map<int, cluster_t *> dendrogram;
-int ids = 0;
 std::map<cluster_t *, int> cluster_ids; //maps a cluster pointer to and id
 
 void initialize_cluster_ids() {
-    ids = 0;
-    cluster_ids.insert(std::make_pair((cluster_t*) NULL, ids++));
+    cluster_ids.insert(std::make_pair((cluster_t*) NULL, 0));
 }
 
 int get_cluster_id(cluster_t* cluster_ptr) {
     std::map<cluster_t *, int>::iterator it = cluster_ids.find(cluster_ptr);
 
     if (it == cluster_ids.end()) {
-        cluster_ids.insert(std::make_pair(cluster_ptr, ids++));
-        return ids - 1;
+        --it;
+        cluster_ids.insert(std::make_pair(cluster_ptr, it->second + 1));
+        return it->second + 1;
     } else {
         return it->second;
     }
@@ -33,12 +30,6 @@ int get_cluster_id(cluster_t* cluster_ptr) {
 
 void split_points(int **points_1, int **points_2, int *points_1_size, int *points_2_size, int *points_membership,
                   int n_points, int *list_of_points) {
-    /*std::cout << "POINTS_MEMBERSHIP: ";
-    for (int point = 0; point < n_points; ++point) {
-        std::cout << "[" << point << "] = " << points_membership[point] << " | ";
-    }
-    std::cout << "\n";*/
-
     //count how many points for each cluster
     (*points_1_size) = (*points_2_size) = 0;
     for (int i = 0; i < n_points; ++i) {
@@ -72,16 +63,6 @@ void split_points(int **points_1, int **points_2, int *points_1_size, int *point
             ++points_2_index;
         }
     }
-
-    /*std::cout << "splits: { ";
-    for (int point = 0; point < (*points_1_size); ++point) {
-        std::cout << (*points_1)[point] << "__";
-    }
-    std::cout << " } and { ";
-    for (int point = 0; point < (*points_2_size); ++point) {
-        std::cout << (*points_2)[point] << "__";
-    }
-    std::cout << " }\n";*/
 }
 
 int are_all_clusters_in_level_unitary(int level) {
@@ -101,13 +82,12 @@ int are_all_clusters_in_level_unitary(int level) {
     }
 }
 
-void inc_levels() { ++levels; }
-
-int get_levels() { return levels; }
+int get_levels() {
+    dendrogram.size();
+}
 
 void initialize_dendrogram(cluster_t *father_cluster) {
     dendrogram.insert(std::make_pair(0, father_cluster));
-    ++levels;
 }
 
 int split_cluster(int level, int *points_membership, cluster_t *original_cluster) {
@@ -144,7 +124,6 @@ int split_cluster(int level, int *points_membership, cluster_t *original_cluster
     std::map<int, cluster_t *>::iterator it = dendrogram.find(level);
 
     if (it == dendrogram.end()) { //could not find level - create new level and associate cluster to it
-        ++levels;
         dendrogram.insert(std::make_pair(level, cluster_1));
     } else { //found level - get last cluster and append new clusters to it
         cluster_t *preceding_cluster = it->second;
@@ -152,11 +131,6 @@ int split_cluster(int level, int *points_membership, cluster_t *original_cluster
             preceding_cluster = preceding_cluster->next_cluster;
         preceding_cluster->next_cluster = cluster_1;
     }
-
-    /*std::cout << "Created two clusters: \n";
-    print_cluster(cluster_1);
-    print_cluster(cluster_2);*/
-
     return true;
 }
 
@@ -170,15 +144,6 @@ cluster_t *get_cluster(int level, int cluster_index) {
 }
 
 float **get_points_in_cluster(cluster_t *cluster, float **points, int n_features) {
-    /*printf("ALL POINTS (cpp) (%d) << \n", 3);
-    for (int k = 0; k < 3 *//*debug para o data_test.csv*//*; ++k) {
-        for (int l = 0; l < n_features; ++l) {
-            printf("%.2f - ", points[k][l]);
-        }
-        printf("\n");
-    }
-    printf(">>\n");*/
-
     //allocate space for returned matrix
     float **points_in_cluster = (float **) malloc(cluster->size * sizeof(float *));
     points_in_cluster[0] = (float *) calloc(static_cast<size_t>(cluster->size), n_features * sizeof(float));
@@ -190,16 +155,6 @@ float **get_points_in_cluster(cluster_t *cluster, float **points, int n_features
             points_in_cluster[point_index][feature_index] = points[cluster->points[point_index]][feature_index];
         }
     }
-
-    /*printf("POINTS IN CLUSTER (cpp) (%d) << \n", cluster->size);
-    for (int k = 0; k < cluster->size; ++k) {
-        for (int l = 0; l < n_features; ++l) {
-            printf("%.2f - ", points_in_cluster[k][l]);
-        }
-        printf("\n");
-    }
-    printf(">>\n");*/
-
     return points_in_cluster;
 }
 
@@ -221,7 +176,7 @@ void print_cluster(cluster_t *cluster1) {
 void print_dendrogram() {
     std::cout << "\n\nDENDROGRAM:\n";
 
-    std::map<int, cluster_t *>::iterator it = dendrogram.begin();
+    auto it = dendrogram.begin();
     while (it != dendrogram.end()) {
         std::cout << "LEVEL " << it->first << " {\n";
         cluster_t *cluster = it->second;
@@ -234,12 +189,12 @@ void print_dendrogram() {
     }
 }
 
-int dendrogram_to_file(char* filename) {
+int dendrogram_to_text_file(char *filename) {
     std::ofstream file (filename);
     if (file.is_open()) {
         file << "DENDROGRAM:\n";
-
-        std::map<int, cluster_t *>::iterator it = dendrogram.begin();
+        file << "LEVELS -> " << dendrogram.size() << "\n";
+        auto it = dendrogram.begin();
         while (it != dendrogram.end()) {
             file << "LEVEL " << it->first << " {\n";
             cluster_t *cluster = it->second;
@@ -272,7 +227,6 @@ int dendrogram_to_file(char* filename) {
 
     } else {
         std::cout << "FAILED TO OPEN " << filename << "\n";
-
         return -1;
     }
 }
@@ -280,7 +234,9 @@ int dendrogram_to_file(char* filename) {
 int dendrogram_to_binary_file(char* filename) {
     std::ofstream file (filename, std::ios::binary);
     if (file.is_open()) {
-        std::map<int, cluster_t *>::iterator dendroIt = dendrogram.begin();
+        auto dendroIt = dendrogram.begin();
+        int levels = (int) dendrogram.size();
+        file.write((char*) &levels, sizeof(int)); //levels
         while (dendroIt != dendrogram.end()) {
             int level = dendroIt->first;
             cluster_t *cluster = dendroIt->second;
@@ -294,13 +250,13 @@ int dendrogram_to_binary_file(char* filename) {
                 int left_child_id = get_cluster_id(cluster->left_child);
                 int right_child_id = get_cluster_id(cluster->right_child);
 
-                file.write((char*) &cluster_id, sizeof(int)) ; //cluster id
                 file.write((char*) &cluster->size, sizeof(int)); //cluster size
+                file.write((char*) &cluster_id, sizeof(int)) ; //cluster id
                 file.write((char*) &father_id, sizeof(int)); //father's id
                 file.write((char*) &brother_id, sizeof(int)); //brother's id
                 file.write((char*) &left_child_id, sizeof(int)); //left child's id
                 file.write((char*) &right_child_id, sizeof(int)); //right child's id
-                file.write((char*) &cluster->points, sizeof(int)*cluster->size); //points
+                file.write((char*) cluster->points, cluster->size * sizeof(int)); //points
 
             } while ((cluster = cluster->next_cluster) != NULL);
             ++dendroIt;
@@ -311,7 +267,96 @@ int dendrogram_to_binary_file(char* filename) {
 
     } else {
         std::cout << "FAILED TO OPEN " << filename << "IN BINARY MODE\n";
-
         return -1;
     }
 }
+
+std::map<int, cluster_t*>* dendrogram_from_binary_file(char* filename) {
+    auto *dendrogram = new std::map<int, cluster_t*>();
+    std::ifstream file (filename, std::ios::binary);
+    if (file.is_open()) {
+        int levels;
+        file.read((char*) &levels, sizeof(int)); //read levels
+        for (int l = 0; l < levels; ++l) {
+            int level;
+            file.read((char*) &level, sizeof(int)); //level
+
+            cluster_t *first_cluster = nullptr;
+            cluster_t *cluster = nullptr;
+            cluster_t *prev_cluster = nullptr;
+            do {
+                cluster = (cluster_t*) malloc(sizeof(cluster_t));
+                cluster->next_cluster = nullptr;
+                if (first_cluster == nullptr) first_cluster = cluster;
+
+                file.read((char*) &cluster->size, sizeof(int)); //cluster size
+                file.read((char*) &cluster->id, sizeof(int)) ; //cluster id
+                file.read((char*) &cluster->father_id, sizeof(int)); //father's id
+                file.read((char*) &cluster->brother_id, sizeof(int)); //brother's id
+                file.read((char*) &cluster->left_child_id, sizeof(int)); //left child's id
+                file.read((char*) &cluster->right_child_id, sizeof(int)); //right child's id
+
+                cluster->points = (int*) malloc(cluster->size * sizeof(int));
+                file.read((char*) cluster->points, cluster->size * sizeof(int)); //points
+
+                if (prev_cluster != nullptr) { //requirement for reconstructing the dendrogram
+                    prev_cluster->next_cluster = cluster;
+                }
+                prev_cluster = cluster;
+            } while (cluster->brother_id != 0);
+
+            dendrogram->insert(std::make_pair(level, first_cluster));
+        }
+
+        file.close();
+        return dendrogram;
+
+    } else {
+        std::cout << "FAILED TO OPEN " << filename << " IN BINARY MODE [" << strerror(errno) << "]\n";
+        return nullptr;
+    }
+}
+
+int dendrogram_to_text_file(std::map<int, cluster_t*> *dendrogram, char *filename) {
+    std::ofstream file (filename);
+    if (file.is_open()) {
+        file << "DENDROGRAM:\n";
+        file << "LEVELS -> " << dendrogram->size() << "\n";
+        std::map<int, cluster_t *>::iterator it = dendrogram->begin();
+        while (it != dendrogram->end()) {
+            file << "LEVEL " << it->first << " {\n";
+            cluster_t *cluster = it->second;
+            do {
+                file << "\t";
+
+                { //cluster to file
+                    file << "CLUSTER #" << get_cluster_id(cluster) << " {\n";
+                    file << "\t\tfather -> #" << get_cluster_id(cluster->father_cluster) << "\n";
+                    file << "\t\tbrother (next) -> #" << get_cluster_id(cluster->next_cluster) << "\n";
+                    file << "\t\tleft child -> #" << get_cluster_id(cluster->left_child) << "\n";
+                    file << "\t\tright child -> #" << get_cluster_id(cluster->right_child) << "\n";
+                    file << "\t\tsize -> " << cluster->size << "\n";
+                    file << "\t\tpoints -> { ";
+                    for (int i = 0; i < cluster->size; ++i) {
+                        file << cluster->points[i];
+                        if (i + 1 < cluster->size) file << ", ";
+                    }
+                    file << " }\n";
+                    file << "\t}\n";
+                }
+
+            } while ((cluster = cluster->next_cluster) != NULL);
+            file << "}\n";
+            ++it;
+        }
+
+        file.close();
+        return 0;
+
+    } else {
+        std::cout << "FAILED TO OPEN " << filename << "\n";
+        return -1;
+    }
+}
+
+

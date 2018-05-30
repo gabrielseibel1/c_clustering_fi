@@ -31,6 +31,9 @@ add_executable(diana
         src/csv_parser.c
         include/csv_parser.h)
 
+add_executable(diana_gold_check
+        src/DIANA/diana_gold_check.cpp)
+
 add_executable(kmeans
         src/kmeans/kmeans.c
         src/kmeans/kmeans.h

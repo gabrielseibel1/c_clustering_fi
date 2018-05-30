@@ -2,10 +2,12 @@
   <dictionary name="gabriel">
     <words>
       <w>calloc</w>
+      <w>dendro</w>
       <w>dendrogram</w>
       <w>grande</w>
       <w>haberman</w>
       <w>kmeans</w>
+      <w>sdcs</w>
       <w>seibel</w>
       <w>souza</w>
       <w>strtok</w>

@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
     extern int optind;
     char *filename = 0;
     char *out_filename = 0;
+    char *gold_filename = 0;
     float *buf;
     float **attributes;
     int i, j;
@@ -116,17 +117,20 @@ int main(int argc, char **argv) {
     char line[1024];
     int isBinaryFile = 0;
     float threshold = 0.001;
-    double computation_timing, total_timing, input_read_timing, output_write_timing;
+    double computation_timing, total_timing, input_read_timing, output_write_timing, compare_timing;
 
     total_timing = omp_get_wtime();
     input_read_timing = omp_get_wtime();
-    while ((opt = getopt(argc, argv, "i:o:k:t:b:n:?")) != EOF) {
+    while ((opt = getopt(argc, argv, "i:o:g:t:b:n:?")) != EOF) {
         switch (opt) {
             case 'i':
                 filename = optarg;
                 break;
             case 'o':
                 out_filename = optarg;
+                break;
+            case 'g':
+                gold_filename = optarg;
                 break;
             case 'b':
                 isBinaryFile = 1;
@@ -237,11 +241,10 @@ int main(int argc, char **argv) {
                          threshold);
     }
     computation_timing = omp_get_wtime() - computation_timing;
-    total_timing = omp_get_wtime() - total_timing;
 
     //show results
     printf("\nDivisive Analysis completed for %d data objects with %d features each\n", numObjects, numAttributes);
-    //print_dendrogram();
+
     output_write_timing = omp_get_wtime();
     int output_success = dendrogram_to_binary_file(out_filename) >= 0;
     output_write_timing = omp_get_wtime() - output_write_timing;
@@ -249,8 +252,10 @@ int main(int argc, char **argv) {
     if (output_success) {
         printf("√√√√ SUCCESS: Output of execution written to %s √√√√\n", out_filename);
     } else {
-        printf("XXXX FAILED to write output of execution written to %s XXXX\n", out_filename);
+        printf("XXXX FAILED to write output of execution to %s XXXX\n", out_filename);
     }
+
+    total_timing = omp_get_wtime() - total_timing;
     printf("\nTotal elapsed time: %f\n", total_timing);
     printf("Time for IO: %f\n", input_read_timing + output_write_timing);
     printf("Time for processing: %f\n", computation_timing);
