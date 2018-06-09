@@ -1,0 +1,36 @@
+Usage <Radiation Benchmarks>
+
+Compiling -> make
+    This should generate 4 binaries:
+    gold          : used to generate the gold file
+    agnes_check   : used to run the kernel's functions in radiation tests 
+    agnes_err_inj : used only for testing error injections
+    agnes_timing  : used only for getting execution time in every part of the benchmark
+    
+Generating an input file -> go to input_gen/ and execute make
+    This should generate the input generator (notice that the binary already exists) 
+    To create another input file use ./datagen <number of objects> <number of attributes>
+        This will create a '.txt' file with the following format: <number of objects>_<number of attributes>.txt
+    Note that several input files have already been generated
+    
+Generating the gold file -> ./gold <input file> <number of clusters> <linkage type>
+    The arguments <number of clusters> and <linkage type> must be of 'int' and 'char' respectively.
+        Linkage types supported: 's' - Single Linkage
+                                 'a' - Average Linkage
+                                 'c' - Complete Linkage
+                                 't' - Centroid Linkage
+                                 
+Testing time and error injection -> ./<agnes_err_inj> or <agnes_timing> <input file> <gold file> <#number of interations>  
+    Use the same format to run the checking file. Only change the first argument for <agnes_check>
+    Before running those files you must run the 'install.py' script located at c_clustering_fi/
+        Remember to use sudo in case of having permission problems
+        This script is responsible for creating the folder to store the log files and create the conf file in /etc/radiation-benchmark.conf
+        
+  Example
+       make
+       cd ../..
+       sudo ./install.py
+       cd src/AGNES/
+      ./gold ./input_gen/2000_2.txt 1 s (this will create a gold file in golden_files/ with the format '1_single.txt')
+      ./agnes_check ./input_gen/2000_2.txt ./golden_files/1_single.txt 1000
+    
