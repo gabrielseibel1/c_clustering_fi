@@ -660,6 +660,7 @@ int main(int argc, char **argv)
 {
 	clock_t start, end;
 	double diff_time = 0;
+	char outputFile[200], clus[5], link[10];
 	time(&start);	
 	
 	
@@ -669,10 +670,22 @@ int main(int argc, char **argv)
                 exit(1);
         } else {
                 //creates a .txt file to save the output of a no error execution
-                out = fopen("/home/gabriel/Documents/carol-fi/codes/AGNES/output.txt", "w");
+		strcpy(clus, argv[2]);
+		strcpy(link, argv[3]);
+		if (strcmp(link, "s") == 0)
+			strcpy(link, "single");
+		else if (strcmp(link, "a") == 0)
+			strcpy(link, "average");
+		else if (strcmp(link, "ce") == 0)
+			strcpy(link, "centroid");
+		else if (strcmp(link, "co") == 0)
+			strcpy(link, "complete");	
+
+		snprintf(outputFile, 200, "./golden_files/%s_%s.txt", clus, link);
+                out = fopen(outputFile, "w");
                 if (out == NULL) {
-                                    fprintf(stderr, "Failed to open output file output.txt\n");
-                                    return ERROR; //kill execution
+                	fprintf(stderr, "Failed to open gold file\n");
+                        return ERROR; //kill execution
                 }
 
                 item_t *items = NULL;
