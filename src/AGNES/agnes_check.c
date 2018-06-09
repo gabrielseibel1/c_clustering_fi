@@ -6,7 +6,7 @@
    *
    * Edited by Geronimo Veit, UFRGS - June, 2019
 */
-
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -693,32 +693,33 @@ int process_input(item_t **items, const char *fname)
 
 void init_agnes(char *input, char *nClusters, char *tLinkage) {
 
-	char clus[5], link[10];
-	char link_type;	
-
+	char clus[5], link[10], entry[20];
+	char link_type, *in;	
+	
+	strcpy(entry, input);
 	strcpy(clus, nClusters);
 	strcpy(link, tLinkage);
-	if (strcmp(link, "s") == 0) {
-		strcpy(link, "single");
+	in = strtok(entry, "/");
+	in = strtok(NULL, "/");
+	in = strtok(NULL, ".");
+
+	if (strcmp(link, "single") == 0) {
 		link_type = 's';
 	}
-	else if (strcmp(link, "a") == 0) {
-		strcpy(link, "average");
+	else if (strcmp(link, "average") == 0) {
 		link_type = 'a';
 	}
 	else if (strcmp(link, "t") == 0) {
-		strcpy(link, "centroid");
 		link_type = 't';
 	}
 	else if (strcmp(link, "c") == 0) {
-		strcpy(link, "complete");
 		link_type = 'c';
 	}	
-
-	snprintf(outputFile, 200, "OUTPUT%s_%s.txt", clus, link);
+	
+	snprintf(outputFile, 200, "OUTPUT%s_%s_%s.txt", clus, link, in);
         out = fopen(outputFile, "w");
 	if (out == NULL) {
-                fprintf(stderr, "Failed to open gold file\n");
+                fprintf(stderr, "Failed to open out file\n");
                 exit(1); //kill execution
 	}
 
@@ -755,13 +756,13 @@ void changeInput(char *file) {
 	int ch, loop = 0;
 	FILE *ft;
 	if (ft = fopen(file, "r+")) {
-		while( ((ch = fgetc(ft)) != EOF) && (loop < 1000)) {
+		while( ((ch = fgetc(ft)) != EOF) && (loop == 0)) {
 			if (ch == '1') {
 				fseek(ft, -1, SEEK_CUR);
-				fputc('a', ft);
+				fputc('2', ft);
 				fseek(ft, 0, SEEK_CUR);
+				loop = 1;
 			}
-			loop++;
 		}
 		fclose(ft);
 	}
@@ -864,11 +865,11 @@ int main(int argc, char** argv) {
 				break;
 		}
 		clusters = strtok(gold, "_");
-		linkage = strtok(NULL, ".");
+		linkage = strtok(NULL, "_");
 	}
 	else {
 		clusters = strtok(NULL, "_");
-		linkage = strtok(NULL, ".");
+		linkage = strtok(NULL, "_");
 	}	
 	
 #ifdef LOGS
@@ -899,7 +900,7 @@ int main(int argc, char** argv) {
         	if(loop == 2) {
             		printf("injecting error, changing input!\n");
 
-			/* Change the initials '1' in the file for 'a' */
+			/* Change the initials '1' in the file for '2' */
             		changeInput(inputFile);
 
         	} else if (loop == 3) {

@@ -660,7 +660,8 @@ int main(int argc, char **argv)
 {
 	clock_t start, end;
 	double diff_time = 0;
-	char outputFile[200], clus[5], link[10];
+	char outputFile[200], clus[5], link[10], entry[20];
+	char *in;
 	time(&start);	
 	
 	
@@ -670,8 +671,13 @@ int main(int argc, char **argv)
                 exit(1);
         } else {
                 //creates a .txt file to save the output of a no error execution
+		strcpy(entry, argv[1]);
 		strcpy(clus, argv[2]);
 		strcpy(link, argv[3]);
+		in = strtok(entry, "/");
+		in = strtok(NULL, "/");
+		in = strtok(NULL, ".");
+
 		if (strcmp(link, "s") == 0)
 			strcpy(link, "single");
 		else if (strcmp(link, "a") == 0)
@@ -680,8 +686,8 @@ int main(int argc, char **argv)
 			strcpy(link, "centroid");
 		else if (strcmp(link, "co") == 0)
 			strcpy(link, "complete");	
-
-		snprintf(outputFile, 200, "./golden_files/%s_%s.txt", clus, link);
+		
+		snprintf(outputFile, 200, "./golden_files/%s_%s_%s.txt", clus, link, in);
                 out = fopen(outputFile, "w");
                 if (out == NULL) {
                 	fprintf(stderr, "Failed to open gold file\n");
