@@ -3,7 +3,6 @@
 //
 
 #include "dendrogram.h"
-#include <map>
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -11,6 +10,10 @@
 
 std::map<int, cluster_t *> dendrogram;
 std::map<cluster_t *, int> cluster_ids; //maps a cluster pointer to and id
+
+std::map<int, cluster_t*> *getOutputDendrogram() {
+    return &dendrogram;
+}
 
 void initialize_cluster_ids() {
     cluster_ids.insert(std::make_pair((cluster_t*) NULL, 0));
@@ -87,6 +90,7 @@ int get_levels() {
 }
 
 void initialize_dendrogram(cluster_t *father_cluster) {
+    dendrogram.clear();
     dendrogram.insert(std::make_pair(0, father_cluster));
 }
 
@@ -271,7 +275,7 @@ int dendrogram_to_binary_file(char* filename) {
     }
 }
 
-std::map<int, cluster_t*>* dendrogram_from_binary_file(char* filename) {
+std::map<int, cluster_t*>* dendrogramFromBinaryFile(char *filename) {
     auto *dendrogram = new std::map<int, cluster_t*>();
     std::ifstream file (filename, std::ios::binary);
     if (file.is_open()) {

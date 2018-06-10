@@ -67,14 +67,12 @@
 /**                                                                     **/
 /*************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <float.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cfloat>
+#include <cmath>
 #include "diana.h"
-#include "../kmeans/kmeans.h"
 #include "../kmeans/kmeans_clustering.h"
-#include <stdbool.h>
 
 #define RANDOM_MAX 2147483647
 
@@ -87,9 +85,9 @@ extern double wtime(void);
 extern int num_omp_threads;
 
 cluster_t *new_father_cluster(int size) {
-    cluster_t *father_cluster = (cluster_t *) malloc(sizeof(cluster_t));
+    auto *father_cluster = (cluster_t *) malloc(sizeof(cluster_t));
     father_cluster->size = size;
-    father_cluster->points = malloc(sizeof(int)*size);
+    father_cluster->points = (int*) malloc(sizeof(int)*size);
     for (int point = 0; point < size; ++point) {
         father_cluster->points[point] = point;
     }

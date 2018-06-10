@@ -17,9 +17,9 @@ add_executable(c_clustering
         src/main.c)
 
 add_executable(diana
-        src/DIANA/diana.c
+        src/DIANA/diana.cpp
         src/DIANA/diana.h
-        src/DIANA/diana_clustering.c
+        src/DIANA/diana_clustering.cpp
         src/kmeans/kmeans_clustering.c
         src/kmeans/kmeans_clustering.h
         src/DIANA/getopt.c
@@ -32,7 +32,20 @@ add_executable(diana
         include/csv_parser.h)
 
 add_executable(diana_gold_check
-        src/DIANA/diana_gold_check.cpp)
+        src/DIANA/diana_gold_check.cpp
+        src/DIANA/dendrogram.cpp
+        src/DIANA/dendrogram.h)
+
+add_executable(diana_radiation
+        src/DIANA/diana_radiation.cpp
+        src/DIANA/dendrogram.cpp
+        src/DIANA/dendrogram.h
+        src/DIANA/diana.h
+        src/DIANA/diana_clustering.cpp
+        src/kmeans/kmeans_clustering.h
+        src/kmeans/kmeans_clustering.c
+        src/DIANA/getopt.c
+        src/DIANA/getopt.h)
 
 add_executable(kmeans
         src/kmeans/kmeans.c

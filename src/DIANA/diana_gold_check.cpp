@@ -10,7 +10,7 @@
 #include "dendrogram.h"
 #include "getopt.h"
 
-std::map<int, cluster_t*>* dendrogram_from_binary_file(char* filename) {
+std::map<int, cluster_t*>* dendrogramFromBinaryFile(char *filename) {
     auto *dendrogram = new std::map<int, cluster_t*>();
     std::ifstream file (filename, std::ios::binary);
     if (file.is_open()) {
@@ -109,8 +109,8 @@ void flagIfDifferent(int a, int b, int level, int cluster_count, int *errors, ch
 int compare_out_and_gold(char *out_filename, char *gold_filename) {
     int errors = 0;
 
-    std::map<int, cluster_t*> *dendrogram_out = dendrogram_from_binary_file(out_filename);
-    std::map<int, cluster_t*> *dendrogram_gold = dendrogram_from_binary_file(gold_filename);
+    std::map<int, cluster_t*> *dendrogram_out = dendrogramFromBinaryFile(out_filename);
+    std::map<int, cluster_t*> *dendrogram_gold = dendrogramFromBinaryFile(gold_filename);
 
     //TODO remove
     dendrogram_to_text_file_mock(dendrogram_out, const_cast<char *>("diana_feedback_out.txt"));
