@@ -867,7 +867,7 @@ int main(int argc, char** argv) {
 #endif
 #ifdef ERR_INJ
         	if(loop == 2) {
-            		printf("injecting error, changing input!\n");
+            		printf("injecting errors, changing input!\n");
 
 			/* Change the initials '1' in the file for '2' */
             		changeInput(inputFile);
@@ -953,4 +953,4 @@ int main(int argc, char** argv) {
 	free(out_buffer);
 	free(gold_buffer);
 	return 0;
-}
+}	

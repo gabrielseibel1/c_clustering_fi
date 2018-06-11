@@ -2,7 +2,7 @@ Usage <Radiation Benchmarks>
 
 Compiling -> make
     This should generate 4 binaries:
-    gold          : used to generate the gold file
+    gold_gen      : used to generate the gold file
     agnes_check   : used to run the kernel's functions in radiation tests 
     agnes_err_inj : used only for testing error injections
     agnes_timing  : used only for getting execution time in every part of the benchmark
@@ -13,7 +13,7 @@ Generating an input file -> go to input_gen/ and execute make
         This will create a '.txt' file with the following format: <number of objects>_<number of attributes>.txt
     !!! IMPORTANT -> Do not use number 1 as number of attributes. This algorithm was widly tested with 2 as the number of attributes !!!
     
-Generating the gold file -> ./gold <input file> <number of clusters> <linkage type>
+Generating the gold file -> Go to gold_gen/ and execute ./gold_gen <input file> <number of clusters> <linkage type>
     The arguments <number of clusters> and <linkage type> must be of 'int' and 'char' respectively.
         Linkage types supported: 's' - Single Linkage
                                  'a' - Average Linkage
@@ -27,10 +27,13 @@ Testing time and error injection -> ./<agnes_err_inj> or <agnes_timing> <input f
         This script is responsible for creating the folder to store the log files and create the conf file in /etc/radiation-benchmark.conf
         
   Example
-       make
-       cd ../..
-       sudo ./install.py
-       cd src/AGNES/
-      ./gold ./input_gen/2000_2.txt 1 s (this will create a gold file in golden_files/ with the format '1_single.txt')
-      ./agnes_check ./input_gen/2000_2.txt ./golden_files/1_single.txt 1000
+       	make
+       	cd ../..
+       	sudo ./install.py
+       	cd src/AGNES/input_gen/
+       	./datagen 2000 2 (this will create a input file in input_gen/ with the format '2000_2.txt')
+	cd ../gold_gen/
+	./gold_gen ../input_gen/2000_2.txt 1 s (this will create a gold file in gold_gen/ with the format '1_single_2000_2.txt')
+    	cd ..
+      	./agnes_check ./input_gen/2000_2.txt ./gold_gen/1_single_2000_2.txt 1000
     
