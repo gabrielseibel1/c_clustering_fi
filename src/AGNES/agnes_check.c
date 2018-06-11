@@ -4,7 +4,7 @@
    * 
    * 
    *
-   * Edited by Geronimo Veit, UFRGS - June, 2019
+   * Edited by Geronimo Veit, UFRGS - June, 2018
 */
 #define _GNU_SOURCE
 #include <stdio.h>
