@@ -724,7 +724,7 @@ void changeInput(char *file) {
 	int ch, loop = 0;
 	FILE *ft;
 	if (ft = fopen(file, "r+")) {
-		while( ((ch = fgetc(ft)) != EOF) && (loop < 10)) {
+		while( ((ch = fgetc(ft)) != EOF) && (loop < 1000)) {
 			if (ch == '1') {
 				fseek(ft, -1, SEEK_CUR);
 				fputc('2', ft);
@@ -842,7 +842,6 @@ int main(int argc, char** argv) {
 	
 #ifdef LOGS
     	set_iter_interval_print(5);
-	set_max_errors_iter(100000);
 
 	char test_info[200]; 
 	snprintf(test_info, 200, "objects:%s features:%s clusters:%s linkage:%s",objects,features,clusters,linkage);
@@ -916,7 +915,8 @@ int main(int argc, char** argv) {
                 		char error_detail[200];
                 		sprintf(error_detail," p: [%d], r: %c, e: %c", i, out_buffer[i], gold_buffer[i]);
 #ifdef LOGS
-                		log_error_detail(error_detail);
+				if (errors<500) //only writes in log the first 500 errors
+                			log_error_detail(error_detail);
 #endif
             		}
         	}
