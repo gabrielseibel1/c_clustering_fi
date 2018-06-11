@@ -2,7 +2,7 @@
    * Code based on Github repository from UFRGS-CAROL/radiation-benchmarks
    * used only for achademic purposes
    * 
-   * Note: Edited version do not use openMP
+   * 
    *
    * Edited by Geronimo Veit, UFRGS - June, 2019
 */
@@ -371,52 +371,20 @@ cluster_t *add_leaves(cluster_t *cluster, item_t *items)
 void print_cluster_items(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        //fprintf(stdout, "Items: ");
-        fprintf(out, "Items: ");
-        if (node->num_items > 0) {
-                //fprintf(stdout, "%s", cluster->nodes[node->items[0]].label);
-                fprintf(out, "%s", cluster->nodes[node->items[0]].label);
-                for (int i = 1; i < node->num_items; ++i) {
-                        //fprintf(stdout, ", %s",
-                                //cluster->nodes[node->items[i]].label);
-                        fprintf(out, ", %s",
-                                cluster->nodes[node->items[i]].label);
-                }
-        }
-        //fprintf(stdout, "\n");
+        
         fprintf(out, "\n");
 }
 
 void print_cluster_node(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        //fprintf(stdout, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
-                //index, node->height, node->centroid.x, node->centroid.y);
 
         fprintf(out, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
                 index, node->height, node->centroid.x, node->centroid.y);
-        if (node->label){
-            //fprintf(stdout, "\tLeaf: %s\n\t", node->label);
-            fprintf(out, "\tLeaf: %s\n\t", node->label);
-        }
-
-        else{
-            //fprintf(stdout, "\tMerged: %d, %d\n\t",
-                  //node->merged[0], node->merged[1]);
-            fprintf(out, "\tMerged: %d, %d\n\t",
-                    node->merged[0], node->merged[1]);
-        }
 
         print_cluster_items(cluster, index);
-        //fprintf(stdout, "\tNeighbours: ");
-        fprintf(out, "\tNeighbours: ");
         neighbour_t *t = node->neighbours;
-        while (t) {
-                //fprintf(stdout, "\n\t\t%2d: %5.3f", t->target, t->distance);
-                fprintf(out, "\n\t\t%2d: %5.3f", t->target, t->distance);
-                t = t->next;
-        }
-        //fprintf(stdout, "\n");
+        
         fprintf(out, "\n");
 }
 
@@ -756,12 +724,12 @@ void changeInput(char *file) {
 	int ch, loop = 0;
 	FILE *ft;
 	if (ft = fopen(file, "r+")) {
-		while( ((ch = fgetc(ft)) != EOF) && (loop == 0)) {
+		while( ((ch = fgetc(ft)) != EOF) && (loop < 10)) {
 			if (ch == '1') {
 				fseek(ft, -1, SEEK_CUR);
 				fputc('2', ft);
 				fseek(ft, 0, SEEK_CUR);
-				loop = 1;
+				loop++;
 			}
 		}
 		fclose(ft);
@@ -792,7 +760,7 @@ int readTxtFile(char *inputFile) {
         	fprintf(stderr, "Error in opening %s file for reading... exiting\n", inputFile);
         	return ERROR;
     	}
-	//printf("Total memory: %d bytes or %d MB\n", numElements*sizeof(char), numElements*sizeof(char)/1000000); //debug
+	
 	return numElements;
 
 }
@@ -873,7 +841,9 @@ int main(int argc, char** argv) {
 	}	
 	
 #ifdef LOGS
-    	set_iter_interval_print(10);
+    	set_iter_interval_print(5);
+	set_max_errors_iter(100000);
+
 	char test_info[200]; 
 	snprintf(test_info, 200, "objects:%s features:%s clusters:%s linkage:%s",objects,features,clusters,linkage);
     	start_log_file("Agnes", test_info);

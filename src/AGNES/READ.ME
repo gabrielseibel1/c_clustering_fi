@@ -11,7 +11,7 @@ Generating an input file -> go to input_gen/ and execute make
     This should generate the input generator (notice that the binary already exists) 
     To create another input file use ./datagen <number of objects> <number of attributes>
         This will create a '.txt' file with the following format: <number of objects>_<number of attributes>.txt
-    Note that several input files have already been generated
+    !!! IMPORTANT -> Do not use number 1 as number of attributes. This algorithm was widly tested with 2 as the number of attributes !!!
     
 Generating the gold file -> ./gold <input file> <number of clusters> <linkage type>
     The arguments <number of clusters> and <linkage type> must be of 'int' and 'char' respectively.

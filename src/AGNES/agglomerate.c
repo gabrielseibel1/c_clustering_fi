@@ -343,52 +343,20 @@ cluster_t *add_leaves(cluster_t *cluster, item_t *items)
 void print_cluster_items(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        //fprintf(stdout, "Items: ");
-        fprintf(out, "Items: ");
-        if (node->num_items > 0) {
-                //fprintf(stdout, "%s", cluster->nodes[node->items[0]].label);
-                fprintf(out, "%s", cluster->nodes[node->items[0]].label);
-                for (int i = 1; i < node->num_items; ++i) {
-                        //fprintf(stdout, ", %s",
-                                //cluster->nodes[node->items[i]].label);
-                        fprintf(out, ", %s",
-                                cluster->nodes[node->items[i]].label);
-                }
-        }
-        //fprintf(stdout, "\n");
+        
         fprintf(out, "\n");
 }
 
 void print_cluster_node(cluster_t *cluster, int index)
 {
         cluster_node_t *node = &(cluster->nodes[index]);
-        //fprintf(stdout, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
-                //index, node->height, node->centroid.x, node->centroid.y);
 
         fprintf(out, "Node %d - height: %d, centroid: (%5.3f, %5.3f)\n",
                 index, node->height, node->centroid.x, node->centroid.y);
-        if (node->label){
-            //fprintf(stdout, "\tLeaf: %s\n\t", node->label);
-            fprintf(out, "\tLeaf: %s\n\t", node->label);
-        }
-
-        else{
-            //fprintf(stdout, "\tMerged: %d, %d\n\t",
-                  //node->merged[0], node->merged[1]);
-            fprintf(out, "\tMerged: %d, %d\n\t",
-                    node->merged[0], node->merged[1]);
-        }
 
         print_cluster_items(cluster, index);
-        //fprintf(stdout, "\tNeighbours: ");
-        fprintf(out, "\tNeighbours: ");
         neighbour_t *t = node->neighbours;
-        while (t) {
-                //fprintf(stdout, "\n\t\t%2d: %5.3f", t->target, t->distance);
-                fprintf(out, "\n\t\t%2d: %5.3f", t->target, t->distance);
-                t = t->next;
-        }
-        //fprintf(stdout, "\n");
+        
         fprintf(out, "\n");
 }
 
@@ -702,15 +670,12 @@ int main(int argc, char **argv)
                         free(items);
 
                         if (cluster) {
-                                //fprintf(stdout, "CLUSTER HIERARCHY\n"
-                                        //"--------------------\n");
                                 fprintf(out, "CLUSTER HIERARCHY\n"
                                         "--------------------\n");
                                 print_cluster(cluster);
 
                                 int k = atoi(argv[2]);
-                                //fprintf(stdout, "\n\n%d CLUSTERS\n"
-                                       // "--------------------\n", k);
+                                
                                 fprintf(out, "\n\n%d CLUSTERS\n"
                                         "--------------------\n", k);
                                 get_k_clusters(cluster, k);

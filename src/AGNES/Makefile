@@ -18,4 +18,4 @@ agnes_timing: $(SOURCES_CHECK)
 	$(CC) $(CC_FLAGS) -o agnes_timing $(SOURCES_CHECK) -DTIMING -lm -Wall
 
 clean:
-	rm -f gold_gen agnes_check agnes_err_inj agnes_timing
+	rm -f gold_gen agnes_check agnes_err_inj agnes_timing golden_files/*.txt input_gen/*.txt *.txt
