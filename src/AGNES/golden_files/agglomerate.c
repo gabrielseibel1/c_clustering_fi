@@ -655,7 +655,7 @@ int main(int argc, char **argv)
 		else if (strcmp(link, "co") == 0)
 			strcpy(link, "complete");	
 		
-		snprintf(outputFile, 200, "./golden_files/%s_%s_%s.txt", clus, link, in);
+		snprintf(outputFile, 200, "%s_%s_%s.txt", clus, link, in);
                 out = fopen(outputFile, "w");
                 if (out == NULL) {
                 	fprintf(stderr, "Failed to open gold file\n");
