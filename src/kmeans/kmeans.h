@@ -43,8 +43,12 @@
 #define FLT_MAX 3.40282347e+38
 #endif
 
+/* cluster.c */
+int     cluster(int, int, float**, int, float, float***);
 
-
-
+/* kmeans_clustering.c */
+float **kmeans_clustering(float**, int, int, int, float, int*);
+float   euclid_dist_2        (float*, float*, int);
+int     find_nearest_point   (float* , int, float**, int);
 
 #endif

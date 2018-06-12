@@ -71,8 +71,8 @@
 #include <float.h>
 #include <omp.h>
 
-#include "cluster.h"
-#include "kmeans_clustering.h"
+#include "kmeans.h"
+
 
 /*---< cluster() >-----------------------------------------------------------*/
 int cluster(int      numObjects,      /* number of input objects */

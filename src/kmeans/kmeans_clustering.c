@@ -63,7 +63,7 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
-#include "kmeans_clustering.h"
+#include "kmeans.h"
 #include <omp.h>
 
 #define RANDOM_MAX 2147483647
