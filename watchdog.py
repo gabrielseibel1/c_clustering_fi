@@ -4,7 +4,7 @@ import os
 import time
 import sys
 
-confFile = "codes/AGNES/agnes.conf"
+confFile = "codes/quicksort/quicksort.conf"
 
 timestampFile = "summary-carolfi.log"
 timestampMaxDiff=60*5 # in seconds

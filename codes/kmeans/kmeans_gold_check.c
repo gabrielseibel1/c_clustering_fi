@@ -80,11 +80,6 @@
 
 #include "kmeans.h"
 
-#ifdef LOGS
-#include "../../include/log_helper.h"
-#endif /* LOGS */
-
-#define MAX_ERR_ITER_LOG 500
 
 
 extern double wtime(void);
@@ -110,22 +105,19 @@ void read_gold(int nclusters, int numAttributes, char * out_filename, float **cl
 int compare_gold(int nclusters, int numAttributes, float **cluster_centres, float **cluster_centres_gold) {
     int i, j;
     int errors=0;
+    char error_detail[200];
     for (i=0; i< nclusters; i++) {
         for (j=0; j<numAttributes; j++)
             if(cluster_centres[i][j] != cluster_centres_gold[i][j]) {
-                //TODO  error
                 errors++;
-                char error_detail[200];
-                sprintf(error_detail," p: [%d,%d], r: %1.16e, e: %1.16e", i,j, cluster_centres[i][j], cluster_centres_gold[i][j]);
-#ifdef LOGS
-                log_error_detail(error_detail);
-#endif
+                if  (errors < 1000) {
+                    sprintf(error_detail," p: [%d,%d], r: %1.16e, e: %1.16e", i,j, cluster_centres[i][j], cluster_centres_gold[i][j]);
+                    printf("#ERR %s\n",error_detail);
+                }
 
             }
     }
-#ifdef LOGS
-    log_error_count(errors);
-#endif
+    printf("#SDC Ite:1 KerTime:0.0 AccTime:0.0 KerErr:%d AccErr:%d\n#END",errors, errors);
     return errors;
 }
 
@@ -135,6 +127,7 @@ void usage(char *argv0) {
         "Usage: %s [switches] -i filename\n"
         "       -i filename     		: file containing data to be clustered\n"
         "       -o output-filename     		: file containing the output result\n"
+        "       -g gold-filename     		: file containing the gold result\n"
         "       -k                 	: number of clusters (default is 5) \n"
         "       -t threshold		: threshold value\n"
         "       -n no. of threads	: number of threads";
@@ -151,6 +144,7 @@ int main(int argc, char **argv) {
     int     nclusters=5;
     char   *filename = 0;
     char   *out_filename = 0;
+    char   *gold_filename = 0;
     float  *buf;
     float **attributes;
     float **cluster_centres=NULL;
@@ -165,13 +159,16 @@ int main(int argc, char **argv) {
     float   threshold = 0.001;
     double  timing;
 
-    while ( (opt=getopt(argc,argv,"i:o:k:t:l:n:?"))!= EOF) {
+    while ( (opt=getopt(argc,argv,"i:o:g:k:t:l:n:?"))!= EOF) {
         switch (opt) {
         case 'i':
             filename=optarg;
             break;
         case 'o':
             out_filename=optarg;
+            break;
+        case 'g':
+            gold_filename=optarg;
             break;
         case 't':
             threshold=atof(optarg);
@@ -195,7 +192,7 @@ int main(int argc, char **argv) {
     }
 
 
-    if (filename == 0 || out_filename == 0) usage(argv[0]);
+    if (filename == 0 || out_filename == 0 || gold_filename == 0) usage(argv[0]);
 
     numAttributes = numObjects = 0;
 
@@ -219,97 +216,21 @@ int main(int argc, char **argv) {
 
 
     cluster_centres_gold    = (float**) malloc(nclusters *             sizeof(float*));
-    for(i = 0; i < nclusters; i++)
+    cluster_centres    = (float**) malloc(nclusters *             sizeof(float*));
+    for(i = 0; i < nclusters; i++) {
         cluster_centres_gold[i] = (float*)  malloc(nclusters * numAttributes * sizeof(float));
-
-    /* allocate space for attributes[] and read attributes of all objects */
-    buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-    attributes    = (float**)malloc(numObjects*             sizeof(float*));
-    attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-
-    /**************** Read input ***************/
-    for (i=1; i<numObjects; i++)
-        attributes[i] = attributes[i-1] + numAttributes;
-    rewind(infile);
-    i = 0;
-    while (fgets(line, 1024, infile) != NULL) {
-        if (strtok(line, " \t\n") == NULL) continue;
-        for (j=0; j<numAttributes; j++) {
-            buf[i] = atof(strtok(NULL, " ,\t\n"));
-            i++;
-        }
-    }
-    fclose(infile);
-    memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
-    /**************** Read input end ************/
-#ifdef LOGS
-    char test_info[200];
-    snprintf(test_info, 200, "filename:%s threshold:%f clusters:%d threads:%d",filename,threshold,nclusters,num_omp_threads);
-    start_log_file((char *)"openmpKmeans", test_info);
-    set_max_errors_iter(MAX_ERR_ITER_LOG);
-    set_iter_interval_print(5);
-#endif /* LOGS */
-
-    printf("Reading gold\n");
-    read_gold(nclusters, numAttributes, out_filename, cluster_centres_gold);
-
-    printf("Starting loop\n");
-    int loop1;
-    for (loop1=0; loop1 < loop_iterations; loop1++)
-    {
-#ifdef LOGS
-        start_iteration();
-#endif /* LOGS */
-        for (i=0; i<nloops; i++) {
-
-            cluster_centres = NULL;
-            cluster(numObjects,
-                    numAttributes,
-                    attributes,           /* [numObjects][numAttributes] */
-                    nclusters,
-                    threshold,
-                    &cluster_centres
-                   );
-
-        }
-#ifdef LOGS
-        end_iteration();
-#endif /* LOGS */
-
-        int errors = compare_gold(nclusters, numAttributes, cluster_centres, cluster_centres_gold);
-        if (errors > 0 ) {
-            printf("Errors: %d\n",errors);
-            read_gold(nclusters, numAttributes, out_filename, cluster_centres_gold);
-            /**************** Read input ***************/
-            if ((infile = fopen(filename, "r")) == NULL) {
-                fprintf(stderr, "Error: no such file (%s)\n", filename);
-                exit(1);
-            }
-            for (i=1; i<numObjects; i++)
-                attributes[i] = attributes[i-1] + numAttributes;
-            rewind(infile);
-            i = 0;
-            while (fgets(line, 1024, infile) != NULL) {
-                if (strtok(line, " \t\n") == NULL) continue;
-                for (j=0; j<numAttributes; j++) {
-                    buf[i] = atof(strtok(NULL, " ,\t\n"));
-                    i++;
-                }
-            }
-            fclose(infile);
-            memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
-            /**************** Read input end ************/
-        } else {
-            printf(" . ");
-            fflush(stdout);
-        }
-
-
+        cluster_centres[i] = (float*)  malloc(nclusters * numAttributes * sizeof(float));
     }
 
-#ifdef LOGS
-    end_log_file();
-#endif
+    printf("#HEADER filename:%s threshold:%f clusters:%d threads:%d\n",filename,threshold,nclusters,num_omp_threads);
+
+    read_gold(nclusters, numAttributes, out_filename, cluster_centres);
+    read_gold(nclusters, numAttributes, gold_filename, cluster_centres_gold);
+
+
+    int errors = compare_gold(nclusters, numAttributes, cluster_centres, cluster_centres_gold);
+
+
 
 
     free(attributes);
