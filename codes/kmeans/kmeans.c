@@ -78,12 +78,13 @@
 #include <unistd.h>
 #include <omp.h>
 #include "getopt.h"
+#include <pthread.h>
 
 #include "kmeans.h"
 
 extern double wtime(void);
 
-int num_omp_threads = 1;
+int num_omp_threads = 2;
 
 /*---< usage() >------------------------------------------------------------*/
 void usage(char *argv0) {
@@ -259,6 +260,13 @@ int main(int argc, char **argv) {
     }
     fclose(file);
 
+
+    // FILE *fp;
+    // fp=fopen("file.txt","w");
+    // fwrite(&i, 1, sizeof(int), fp);
+    // fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
+    // fclose(fp);
+
     printf("Time for process: %f\n", timing);
 
     free(attributes);
@@ -267,4 +275,3 @@ int main(int argc, char **argv) {
     free(buf);
     return(0);
 }
-

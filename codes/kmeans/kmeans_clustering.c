@@ -17,7 +17,7 @@
 /*                                                                           */
 /*2       Redistributions in binary form must reproduce the above copyright   */
 /*        notice, this list of conditions and the following disclaimer in the */
-/*        documentation and/or other materials provided with the distribution.*/ 
+/*        documentation and/or other materials provided with the distribution.*/
 /*                                                                            */
 /*3       Neither the name of Northwestern University nor the names of its    */
 /*        contributors may be used to endorse or promote products derived     */
@@ -126,14 +126,14 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
 	float  **new_centers;				/* [nclusters][nfeatures] */
 	float  **clusters;					/* out: [nclusters][nfeatures] */
     float    delta;
-        
+
     double   timing;
 
 	int      nthreads;
     int    **partial_new_centers_len;
     float ***partial_new_centers;
 
-    nthreads = num_omp_threads; 
+    nthreads = num_omp_threads;
 
     /* allocate space for returning variable clusters[] */
     clusters    = (float**) malloc(nclusters *             sizeof(float*));
@@ -176,34 +176,34 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
         for (j=0; j<nclusters; j++)
             partial_new_centers[i][j] = (float*)calloc(nfeatures, sizeof(float));
 	}
-	//printf("num of threads = %d\n", num_omp_threads);
+	printf("num of threads = %d\n", num_omp_threads);
     do {
         delta = 0.0;
 		omp_set_num_threads(num_omp_threads);
 		#pragma omp parallel \
                 shared(feature,clusters,membership,partial_new_centers,partial_new_centers_len)
         {
-            int tid = omp_get_thread_num();				
+            int tid = omp_get_thread_num();
             #pragma omp for \
                         private(i,j,index) \
                         firstprivate(npoints,nclusters,nfeatures) \
                         schedule(static) \
                         reduction(+:delta)
             for (i=0; i<npoints; i++) {
-	        /* find the index of nestest cluster centers */					
+	        /* find the index of nestest cluster centers */
 	        index = find_nearest_point(feature[i],
 		             nfeatures,
 		             clusters,
-		             nclusters);				
+		             nclusters);
 	        /* if membership changes, increase delta by 1 */
 	        if (membership[i] != index) delta += 1.0;
 
 	        /* assign the membership to object i */
 	        membership[i] = index;
-				
+
 	        /* update new cluster centers : sum of all objects located
 		       within */
-	        partial_new_centers_len[tid][index]++;				
+	        partial_new_centers_len[tid][index]++;
 	        for (j=0; j<nfeatures; j++)
 		       partial_new_centers[tid][index][j] += feature[i][j];
             }
@@ -219,7 +219,7 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
                     partial_new_centers[j][i][k] = 0.0;
                 }
             }
-        }    
+        }
 
 		/* replace old cluster centers with new_centers */
 		for (i=0; i<nclusters; i++) {
@@ -230,14 +230,13 @@ float** kmeans_clustering(float **feature,    /* in: [npoints][nfeatures] */
 			}
 			new_centers_len[i] = 0;   /* set back to 0 */
 		}
-        
+
     } while (delta > threshold && loop++ < 500);
 
-    
+
     free(new_centers[0]);
     free(new_centers);
     free(new_centers_len);
 
     return clusters;
 }
-

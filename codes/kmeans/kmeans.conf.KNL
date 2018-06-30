@@ -11,10 +11,10 @@ faultModel = 2
 
 
 ################### NW ###################
-goldFile = /home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/gold1000000_34
-outputFile = /home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/out1000000_34
+goldFile = /home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/gold450000_34
+outputFile = /home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/out450000_34
 
-posExecScript=/home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/kmeans-convert-out-log.py
+posExecScript=/home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/kmeans-convert-out-log.py
 # How many interrupt signals to send sequentially
 seqSignals = 5
 # How many random threads will attempt to send interrupt signals
@@ -24,7 +24,7 @@ numThreadsFI = 3
 maxWaitTime = 25
 
 # Commands to set the session inside GDB environment
-gdbInitStrings = file /home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/kmeans;set args -n 272 -i /home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/1000000_34.txt -o /home/vilmarfonseca/carol-fi/codes/kmeans/kmeans-knl-files/out1000000_34
+gdbInitStrings = file /home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/kmeans;set args -n 2 -i /home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/450000_34.txt -o /home/vilmarfonseca/c_clustering_fi/codes/kmeans/kmeans-knl-files/out450000_34
 
 # Shell command to send SIGINT to the application being tested
 signalCmd = killall -2 kmeans
