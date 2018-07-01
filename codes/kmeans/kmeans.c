@@ -85,6 +85,7 @@
 extern double wtime(void);
 
 int num_omp_threads = 2;
+int mark=0;
 
 /*---< usage() >------------------------------------------------------------*/
 void usage(char *argv0) {
@@ -111,6 +112,7 @@ int main(int argc, char **argv) {
     float  *buf;
     float **attributes;
     float **cluster_centres=NULL;
+    float **cluster_centres_thread2=NULL;
     int     i, j;
 
     int     numAttributes;
@@ -217,7 +219,7 @@ int main(int argc, char **argv) {
     printf("I/O completed\n");
 
     memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
-
+//*****************************************************************************
     timing = omp_get_wtime();
     for (i=0; i<nloops; i++) {
 
@@ -237,7 +239,31 @@ int main(int argc, char **argv) {
     printf("number of Clusters %d\n",nclusters);
     printf("number of Attributes %d\n\n",numAttributes);
     printf("number of Objects %d\n\n",numObjects);
+//*****************************************************************************
 
+  timing = 0;
+  memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+//*****************************************************************************
+    timing = omp_get_wtime();
+    for (i=0; i<nloops; i++) {
+
+        cluster_centres_thread2 = NULL;
+        cluster(numObjects,
+                numAttributes,
+                attributes,           /* [numObjects][numAttributes] */
+                nclusters,
+                threshold,
+                &cluster_centres_thread2
+               );
+
+    }
+    timing = omp_get_wtime() - timing;
+
+
+    printf("number of Clusters 2 %d\n",nclusters);
+    printf("number of Attributes 2 %d\n\n",numAttributes);
+    printf("number of Objects  2%d\n\n",numObjects);
+//*****************************************************************************
     /*
       printf("Cluster Centers Output\n");
       printf("The first number is cluster number and the following data is arribute value\n");
@@ -261,11 +287,33 @@ int main(int argc, char **argv) {
     fclose(file);
 
 
-    // FILE *fp;
-    // fp=fopen("file.txt","w");
-    // fwrite(&i, 1, sizeof(int), fp);
-    // fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
-    // fclose(fp);
+    //for (i=0; i< nclusters; i++) {
+      //for (j=0; j<numAttributes; j++){
+        if(cluster_centres != cluster_centres_thread2){
+	  
+	  FILE *f = fopen("SDC_count.txt", "r");
+          if (f == NULL){
+            printf("Arquivo nao foi criado ainda!\n");
+          }
+	  else {
+		fscanf(f,"%d",&mark);
+	  	fclose(f);
+	  }			
+          
+	  mark++;
+	  printf("Deu SDC!\n");
+	  f = fopen("SDC_count.txt", "w");
+          if (f == NULL){
+            printf("Error opening file!\n");
+            exit(1);
+          }
+          fprintf(f, "%d", mark);
+          fclose(f);
+        }
+      //}
+    //}
+
+
 
     printf("Time for process: %f\n", timing);
 
