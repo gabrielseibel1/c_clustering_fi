@@ -287,9 +287,9 @@ int main(int argc, char **argv) {
     fclose(file);
 
 
-    //for (i=0; i< nclusters; i++) {
-      //for (j=0; j<numAttributes; j++){
-        if(cluster_centres != cluster_centres_thread2){
+    for (i=0; i< nclusters; i++) {
+      for (j=0; j<numAttributes; j++){
+        if(cluster_centres[i][j] != cluster_centres_thread2[i][j]){
 	  
 	  FILE *f = fopen("SDC_count.txt", "r");
           if (f == NULL){
@@ -309,9 +309,15 @@ int main(int argc, char **argv) {
           }
           fprintf(f, "%d", mark);
           fclose(f);
+
+	  while(1){
+		printf("Infinity Loop\n")
+	  }
+	  j=numAttributes;
         }
-      //}
-    //}
+	i=nclusters;
+      }
+    }
 
 
 
