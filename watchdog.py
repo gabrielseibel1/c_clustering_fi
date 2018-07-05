@@ -4,7 +4,7 @@ import os
 import time
 import sys
 
-confFile = "codes/quicksort/quicksort.conf"
+confFile = "codes/kmeans/kmeans.conf"
 
 timestampFile = "summary-carolfi.log"
 timestampMaxDiff=60*5 # in seconds
@@ -30,7 +30,7 @@ try:
             run()
         else:
             print "timestamp OK"
-        
+
         time.sleep(timestampMaxDiff)
 
 except KeyboardInterrupt:  # Ctrl+c
