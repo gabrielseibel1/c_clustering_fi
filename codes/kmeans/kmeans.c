@@ -84,6 +84,7 @@
 extern double wtime(void);
 
 int num_omp_threads = 1;
+int mark = 0;
 
 /*---< usage() >------------------------------------------------------------*/
 void usage(char *argv0) {
@@ -99,6 +100,38 @@ void usage(char *argv0) {
     exit(-1);
 }
 
+int equality_check(int var, int var2){
+  if(var == var2)
+    return 1;
+  else
+    return 0;
+}
+
+void inc_cont_SDC_file_and_loop(){
+  FILE *f = fopen("SDC_count.txt", "r");
+    if (f == NULL){
+      printf("Arquivo nao foi criado ainda!\n");
+    }
+	  else {
+		fscanf(f,"%d",&mark);
+	  	fclose(f);
+	  }
+
+	  mark++;
+	  printf("Deu SDC!\n");
+	  f = fopen("SDC_count.txt", "w");
+    if (f == NULL){
+      printf("Error opening file!\n");
+      exit(1);
+    }
+  fprintf(f, "%d", mark);
+  fclose(f);
+
+  while (1) {
+    printf("Infinity Loop\n");
+  }
+}
+
 /*---< main() >-------------------------------------------------------------*/
 int main(int argc, char **argv) {
     int     opt;
@@ -108,11 +141,14 @@ int main(int argc, char **argv) {
     char   *filename = 0;
     char   *out_filename = 0;
     float  *buf;
+    float  *buf_duplicated;
     float **attributes;
+    float **attributes_duplicated;
     float **cluster_centres=NULL;
     int     i, j;
 
     int     numAttributes;
+    int     numAttributes_duplicated;
     int     numObjects;
     char    line[1024];
     int     isBinaryFile = 0;
@@ -153,6 +189,7 @@ int main(int argc, char **argv) {
     if (filename == 0 || out_filename == 0) usage(argv[0]);
 
     numAttributes = numObjects = 0;
+    numAttributes_duplicated = 0;
 
     /* from the input file, get the numAttributes and numObjects ------------*/
 
@@ -164,16 +201,23 @@ int main(int argc, char **argv) {
         }
         read(infile, &numObjects,    sizeof(int));
         read(infile, &numAttributes, sizeof(int));
+        read(infile, &numAttributes_duplicated, sizeof(int));
 
 
         /* allocate space for attributes[] and read attributes of all objects */
         buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        attributes    = (float**)malloc(numObjects*             sizeof(float*));
+        buf_duplicated = (float*) malloc(numObjects*numAttributes_duplicated*sizeof(float));
+        attributes    = (float**)malloc(numObjects*sizeof(float*));
+        attributes_duplicated = (float**) malloc(numObjects*sizeof(float*));
         attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
+        attributes_duplicated[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
         for (i=1; i<numObjects; i++)
             attributes[i] = attributes[i-1] + numAttributes;
+        for (i=1; i<numObjects; i++)
+            attributes_duplicated[i] = attributes_duplicated[i-1] + numAttributes_duplicated;
 
         read(infile, buf, numObjects*numAttributes*sizeof(float));
+        read(infile,buf_duplicated, numObjects*numAttributes_duplicated*sizeof(float));
 
         close(infile);
     }
@@ -189,45 +233,72 @@ int main(int argc, char **argv) {
         rewind(infile);
         while (fgets(line, 1024, infile) != NULL) {
             if (strtok(line, " \t\n") != 0) {
-                /* ignore the id (first attribute): numAttributes = 1; */
                 while (strtok(NULL, " ,\t\n") != NULL) numAttributes++;
+                break;
+            }
+        }
+        rewind(infile);
+        while (fgets(line, 1024, infile) != NULL) {
+            if (strtok(line, " \t\n") != 0) {
+                while (strtok(NULL, " ,\t\n") != NULL) numAttributes_duplicated++;
                 break;
             }
         }
 
 
         /* allocate space for attributes[] and read attributes of all objects */
-        buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        attributes    = (float**)malloc(numObjects*             sizeof(float*));
-        attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        for (i=1; i<numObjects; i++)
-            attributes[i] = attributes[i-1] + numAttributes;
+
+        if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+          buf = (float*) malloc(numObjects*numAttributes*sizeof(float));
+        } else {
+            inc_cont_SDC_file_and_loop();
+        }
+        attributes    = (float**)malloc(numObjects*sizeof(float*));
+
+        if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+          attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
+        } else {
+            inc_cont_SDC_file_and_loop();
+        }
+
+        if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+          for (i=1; i<numObjects; i++)
+              attributes[i] = attributes[i-1] + numAttributes;
+        } else {
+            inc_cont_SDC_file_and_loop();
+        }
+
         rewind(infile);
         i = 0;
         while (fgets(line, 1024, infile) != NULL) {
             if (strtok(line, " \t\n") == NULL) continue;
             for (j=0; j<numAttributes; j++) {
+              if(equality_check(numAttributes, numAttributes_duplicated) == 1){
                 buf[i] = atof(strtok(NULL, " ,\t\n"));
                 i++;
+              } else {
+                  inc_cont_SDC_file_and_loop();
+              }
             }
         }
-        fclose(infile);
     }
     printf("I/O completed\n");
 
-    memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+    if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+      memcpy(attributes[0], buf, numObjects*numAttributes*sizeof(float));
+    } else {
+        inc_cont_SDC_file_and_loop();
+    }
 
     timing = omp_get_wtime();
     for (i=0; i<nloops; i++) {
 
         cluster_centres = NULL;
-        cluster(numObjects,
-                numAttributes,
-                attributes,           /* [numObjects][numAttributes] */
-                nclusters,
-                threshold,
-                &cluster_centres
-               );
+        if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+          cluster(numObjects,numAttributes,attributes,nclusters,threshold,&cluster_centres);
+        } else {
+            inc_cont_SDC_file_and_loop();
+        }
 
     }
     timing = omp_get_wtime() - timing;
@@ -235,28 +306,23 @@ int main(int argc, char **argv) {
 
     printf("number of Clusters %d\n",nclusters);
     printf("number of Attributes %d\n\n",numAttributes);
+    printf("number of attributes_duplicated %d\n\n",numAttributes_duplicated);
     printf("number of Objects %d\n\n",numObjects);
 
-    /*
-      printf("Cluster Centers Output\n");
-      printf("The first number is cluster number and the following data is arribute value\n");
-      printf("=============================================================================\n\n");
-
-      for (i=0; i< nclusters; i++) {
-    	printf("%d: ", i);
-          for (j=0; j<numAttributes; j++)
-              printf("%.2f ", cluster_centres[i][j]);
-          printf("\n\n");
-      }
-    */
     FILE *file;
     if( (file = fopen(out_filename, "wb" )) == 0 )
         printf( "The GOLD file was not opened\n" );
     for (i=0; i< nclusters; i++) {
         fwrite(&i, 1, sizeof(int), file);
-        for (j=0; j<numAttributes; j++)
+        for (j=0; j<numAttributes; j++){
+          if(equality_check(numAttributes, numAttributes_duplicated) == 1){
             fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
+          } else {
+              inc_cont_SDC_file_and_loop();
+          }
+        }
     }
+
     fclose(file);
 
     printf("Time for process: %f\n", timing);
@@ -267,4 +333,3 @@ int main(int argc, char **argv) {
     free(buf);
     return(0);
 }
-
