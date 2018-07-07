@@ -137,7 +137,8 @@ int main(int argc, char **argv) {
     int     opt;
     extern char   *optarg;
     extern int     optind;
-    int     nclusters=5;
+    int     nclusters = 5;
+    int     nclusters_duplicated = 5;
     char   *filename = 0;
     char   *out_filename = 0;
     float  *buf;
@@ -170,6 +171,7 @@ int main(int argc, char **argv) {
             break;
         case 'k':
             nclusters = atoi(optarg);
+            nclusters_duplicated = atoi(optarg);
             break;
         case 'n':
             num_omp_threads = atoi(optarg);
@@ -286,33 +288,47 @@ int main(int argc, char **argv) {
 
         cluster_centres = NULL;
         if(equality_check(numAttributes, numAttributes_duplicated) == 1){
-          cluster(numObjects,numAttributes,attributes,nclusters,threshold,&cluster_centres);
-        } else {
+          if(equality_check(nclusters, nclusters_duplicated) == 1){
+              cluster(numObjects,numAttributes,attributes,nclusters,threshold,&cluster_centres);
+          }
+          else
+              inc_cont_SDC_file_and_loop();
+        } else
             inc_cont_SDC_file_and_loop();
-        }
 
     }
     timing = omp_get_wtime() - timing;
 
 
     printf("number of Clusters %d\n",nclusters);
+    printf("number of Clusters_Duplicated %d\n",nclusters_duplicated);
     printf("number of Attributes %d\n\n",numAttributes);
-    printf("number of attributes_duplicated %d\n\n",numAttributes_duplicated);
+    printf("number of Attributes_Duplicated %d\n\n",numAttributes_duplicated);
     printf("number of Objects %d\n\n",numObjects);
 
     FILE *file;
     if( (file = fopen(out_filename, "wb" )) == 0 )
         printf( "The GOLD file was not opened\n" );
-    for (i=0; i< nclusters; i++) {
-        fwrite(&i, 1, sizeof(int), file);
-        for (j=0; j<numAttributes; j++){
-          if(equality_check(numAttributes, numAttributes_duplicated) == 1){
-            fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
-          } else {
-              inc_cont_SDC_file_and_loop();
+    if(equality_check(nclusters, nclusters_duplicated) == 1){
+      for (i=0; i< nclusters; i++) {
+        if(equality_check(nclusters, nclusters_duplicated) == 1){
+          fwrite(&i, 1, sizeof(int), file);
+          for (j=0; j<numAttributes; j++){
+            if(equality_check(numAttributes, numAttributes_duplicated) == 1){
+              fwrite(&cluster_centres[i][j], 1, sizeof(float), file);
+            } else {
+                inc_cont_SDC_file_and_loop();
+            }
           }
+        } else {
+          inc_cont_SDC_file_and_loop();
         }
+      }
     }
+    else {
+      inc_cont_SDC_file_and_loop();
+    }
+
 
     fclose(file);
 
