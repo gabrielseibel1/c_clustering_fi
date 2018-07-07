@@ -18,3 +18,6 @@ gen_data:
 	mv kmeans kmeans_gold_check datagen 1000000_34.txt gold1000000_34 $(folder)
 	@echo "All Done"
 	@echo "Gold and executables copy are stored in $(folder)"
+
+clean:
+	rm -r $(folder)

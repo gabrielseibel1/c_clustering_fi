@@ -141,9 +141,7 @@ int main(int argc, char **argv) {
     char   *filename = 0;
     char   *out_filename = 0;
     float  *buf;
-    float  *buf_duplicated;
     float **attributes;
-    float **attributes_duplicated;
     float **cluster_centres=NULL;
     int     i, j;
 
@@ -201,23 +199,16 @@ int main(int argc, char **argv) {
         }
         read(infile, &numObjects,    sizeof(int));
         read(infile, &numAttributes, sizeof(int));
-        read(infile, &numAttributes_duplicated, sizeof(int));
 
 
         /* allocate space for attributes[] and read attributes of all objects */
         buf           = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        buf_duplicated = (float*) malloc(numObjects*numAttributes_duplicated*sizeof(float));
         attributes    = (float**)malloc(numObjects*sizeof(float*));
-        attributes_duplicated = (float**) malloc(numObjects*sizeof(float*));
         attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
-        attributes_duplicated[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
         for (i=1; i<numObjects; i++)
             attributes[i] = attributes[i-1] + numAttributes;
-        for (i=1; i<numObjects; i++)
-            attributes_duplicated[i] = attributes_duplicated[i-1] + numAttributes_duplicated;
 
         read(infile, buf, numObjects*numAttributes*sizeof(float));
-        read(infile,buf_duplicated, numObjects*numAttributes_duplicated*sizeof(float));
 
         close(infile);
     }
