@@ -143,6 +143,7 @@ int main(int argc, char **argv) {
     char   *out_filename = 0;
     float  *buf;
     float **attributes;
+    float **attributes_duplicated;
     float **cluster_centres=NULL;
     int     i, j;
 
@@ -246,8 +247,7 @@ int main(int argc, char **argv) {
         } else {
             inc_cont_SDC_file_and_loop();
         }
-        attributes    = (float**)malloc(numObjects*sizeof(float*));
-
+        attributes = (float**)malloc(numObjects*sizeof(float*));
         if(equality_check(numAttributes, numAttributes_duplicated) == 1){
           attributes[0] = (float*) malloc(numObjects*numAttributes*sizeof(float));
         } else {

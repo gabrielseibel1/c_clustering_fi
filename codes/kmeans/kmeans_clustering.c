@@ -81,19 +81,25 @@ int find_nearest_point(float  *pt,          /* [nfeatures] */
                        float **pts,         /* [npts][nfeatures] */
                        int     npts)
 {
-    int index, i;
+    int index, i, index_duplicated;
     float min_dist=FLT_MAX;
 
     /* find the cluster center id with min distance to pt */
     for (i=0; i<npts; i++) {
         float dist;
+        float dist_duplicated;
         dist = euclid_dist_2(pt, pts[i], nfeatures);  /* no need square root */
+        dist_duplicated = euclid_dist_2(pt, pts[i], nfeatures);
         if (dist < min_dist) {
             min_dist = dist;
             index    = i;
         }
+        if (dist_duplicated < min_dist) {
+            min_dist = dist_duplicated;
+            index_duplicated = i;
+        }
     }
-    return(index);
+    return(index_duplicated);
 }
 
 int equality_check2(int var, int var2){
